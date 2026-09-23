@@ -1,0 +1,75 @@
+{
+  "release": {
+    "channel": "stable"
+  },
+  "sharedFolders": [
+    {
+      "path": "Research",
+      "guid": "95e8f2c1-5172-4729-bc75-1a2938326e0c",
+      "relay": "d7d3d701-c1cf-45ec-935c-099e4258959c",
+      "sync": {
+        "canvas": true,
+        "bases": true,
+        "images": true,
+        "audio": true,
+        "videos": true,
+        "pdfs": true,
+        "otherTypes": false
+      },
+      "remoteActivity": [
+        {
+          "guid": "7b40ac31-4732-49b4-ac61-5c7ce804e463",
+          "timestamp": 1789285329729
+        },
+        {
+          "guid": "23e451cd-6618-4734-9854-c1dfcc6cfb4a",
+          "timestamp": 1789279024123
+        }
+      ]
+    },
+    {
+      "path": "Todo",
+      "guid": "ddef17b9-f471-4db2-919b-378c18434698",
+      "relay": "d7d3d701-c1cf-45ec-935c-099e4258959c",
+      "sync": {
+        "canvas": true,
+        "bases": true,
+        "images": true,
+        "audio": true,
+        "videos": true,
+        "pdfs": true,
+        "otherTypes": false
+      },
+      "remoteActivity": [
+        {
+          "guid": "f8e3fbd6-dcf4-4c00-b4f0-fabe9c79c4fd",
+          "timestamp": 1789285177907
+        }
+      ]
+    }
+  ],
+  "endpoints": {},
+  "enableDocumentStatus": false,
+  "enableNewLinkFormat": false,
+  "enableDiffLinkStatus": false,
+  "enableDiscordLogin": false,
+  "enableDeviceManagement": true,
+  "enableResourceMeter": false,
+  "enableDeltaLogging": false,
+  "enableNetworkLogging": false,
+  "enableVerifyUploads": false,
+  "enableHSMRecording": false,
+  "enableHSMResourceContracts": false,
+  "enableDraftMode": false,
+  "enableFolderIdbMigration": false,
+  "enableMetadataHealthNotice": true,
+  "enableNoteStateInspector": false,
+  "enableSavingFlagPolyfill": true,
+  "enableFrontmatterDuplicateRecovery": false,
+  "enableSingleUserHistory": true,
+  "enableStreamerMode": false,
+  "debugging": false,
+  "login": {
+    "provider": "google"
+  }
+}

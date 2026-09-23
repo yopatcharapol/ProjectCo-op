@@ -1,0 +1,222 @@
+{
+  "main": {
+    "id": "0a4fd14b0c5990cd",
+    "type": "split",
+    "children": [
+      {
+        "id": "cb7423ac982bfbf6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "61f2a2cf240ad5d9",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "d92d971b63550a34",
+    "type": "split",
+    "children": [
+      {
+        "id": "03f948781dc62c09",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "297868cfc2e6c797",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "34404f1eb3555c2b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "7f483e6a967fec5f",
+    "type": "split",
+    "children": [
+      {
+        "id": "3b2afb6d5059fefa",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "27102477ae613cd5",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "LoRa Communication for Agriculture.pdf",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "acf963618d8aad1a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "LoRa Communication for Agriculture.pdf",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "ad057587581d1afe",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e2ca332bb90f0283",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "c96a522adb6423de",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "LoRa Communication for Agriculture.pdf",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          },
+          {
+            "id": "7383cb68a9612a3f",
+            "type": "leaf",
+            "state": {
+              "type": "system3-sync-status",
+              "state": {},
+              "icon": "satellite",
+              "title": "Sync status"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "system3-relay:Relay": false
+    }
+  },
+  "active": "61f2a2cf240ad5d9",
+  "lastOpenFiles": [
+    "File/Untitled",
+    "share_friend/share/File/Untitled",
+    "share_friend/share/File/research.md",
+    "share_friend/share/File/search.md",
+    "share_friend/share/File/sarerch.md",
+    "share_friend/share/File/resh.md",
+    "File/research.md",
+    "share_friend/share/File/Untitled.md",
+    "share_friend/share/Wi-Fi Study Guide.md",
+    "share_friend/share/Untitled",
+    "share_friend/share/Untitled.canvas",
+    "share_friend/share/Pasted image 20260913143526.png",
+    "share_friend/share/802.11-split-2024-2443-2447.pdf.md",
+    "share_friend/share/Todo/TO-DO List Research.md",
+    "share_friend/share/Todo",
+    "share_friend/share/Research/สรุป/IEEE 802.11 Scanning/IEEE 802.11-2024.md",
+    "share_friend/share/Research/สรุป/IEEE 802.11 Scanning",
+    "share_friend/share/Research/สรุป",
+    "share_friend/share/Research",
+    "share_friend/share/File",
+    "Research/สรุป/IEEE 802.11 Scanning/IEEE 802.11-2024.md",
+    "share_friend/share/Welcome.md",
+    "share_friend/share",
+    "share_friend",
+    "New folder",
+    "2026-09-13.md",
+    "ADVISOR_REPORT.md",
+    "Untitled.canvas",
+    "research_notes/comparison_matrix.md",
+    "README.md",
+    "Untitled.md",
+    "Todo/TO-DO List Research.md",
+    "Research/สรุป/IEEE 802.11 Scanning/IEEE 802.11-2024.md",
+    "assets/images/03_allora_content_protocol.jpg",
+    "assets/images/02_lima_lorawan_mesh.jpg",
+    "assets/images/01_meshtastic_mountain_tracker.jpg"
+  ]
+}

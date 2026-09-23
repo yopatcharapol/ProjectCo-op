@@ -1,90 +1,98 @@
-# 📡 Project Co-op: ระบบค้นหาและระบุตำแหน่งผู้ประสบภัยด้วย Passive Smartphone RF Sniffing & LoRa Mesh
+<div align="center">
 
-ยินดีต้อนรับสู่คลังความรู้และเอกสารข้อกำหนดทางวิศวกรรม **โครงงานสหกิจศึกษา (Project Co-op)**  
-โฟลเดอร์โครงการ: [`d:\ProjectCo-op`](file:///d:/ProjectCo-op) (และ [`d:\ProjectLoRa`](file:///d:/ProjectLoRa))
+# 📡 Project Co-op
+### ระบบค้นหาและระบุตำแหน่งผู้ประสบภัยด้วย Passive Smartphone RF Sniffing
+**Passive Smartphone RF Sniffing for Search and Rescue (SAR) Localization**
 
-> 🚀 **เอกสารสเปกหลักของโครงการปัจจุบัน (Active Core Specs):**
-> 1. [**`docs/08_smartphone_rf_sensing.md`**](file:///d:/ProjectLoRa/docs/08_smartphone_rf_sensing.md): สถาปัตยกรรมระบบดักจับคลื่นสมาร์ตโฟนพาสซีฟ และการเชื่อมต่อส่งผ่าน LoRa Mesh สู่การทำ Trilateration
-> 2. [**`docs/09_smartphone_rf_signals_analysis.md`**](file:///d:/ProjectLoRa/docs/09_smartphone_rf_signals_analysis.md): บทวิเคราะห์คลื่นสัญญาณวิทยุทั้งหมดที่สมาร์ตโฟนแผ่ออกมา (Wi-Fi, BLE, Cellular, UWB) และกลยุทธ์การตรวจจับบน ESP32
-> 3. [**`ADVISOR_REPORT.md`**](file:///d:/ProjectCo-op/reports_and_notes/ADVISOR_REPORT.md): สรุปรายงานยุทธศาสตร์และพิมพ์เขียวฉบับนำเสนออาจารย์ที่ปรึกษา
+[![Project Status](https://img.shields.io/badge/Status-Active%20Research-blue?style=for-the-badge&logo=git)](https://github.com/yopatcharapol/ProjectCo-op)
+[![Platform](https://img.shields.io/badge/Hardware-ESP32%20%7C%20Arduino-red?style=for-the-badge&logo=espressif)](share_friend/Experiments/01_03_wifi_sniffer/)
+[![Standard](https://img.shields.io/badge/Standard-IEEE%20802.11--2024-success?style=for-the-badge)](share_friend/Research/)
+[![Docs](https://img.shields.io/badge/Docs-Obsidian%20Vault-purple?style=for-the-badge&logo=obsidian)](share_friend/)
 
 ---
 
-## 📂 โครงสร้างการจัดหมวดหมู่ไฟล์ (Directory Structure)
+<p align="center">
+  <b>การค้นหาผู้ประสบภัยหรือผู้หลงป่าผ่านคลื่นสัญญาณวิทยุที่สมาร์ตโฟนแผ่ออกมาตามธรรมชาติ (Unintentional & Spontaneous RF Emissions) โดยไม่ต้องพึ่งพาเครือข่ายมือถือ (Cellular Base Station) และไม่ต้องติดตั้งแอปพลิเคชันใดๆ ลงบนเครื่องเป้าหมาย</b>
+</p>
+
+</div>
+
+---
+
+## 🎯 ไฮไลต์และหลักการทำงานของโครงการ (Core Highlights)
+
+> [!IMPORTANT]
+> **หลักการพื้นฐาน (Zero-App & Passive Sensing):**  
+> แม้ว่าผู้ประสบภัยจะไม่มีสัญญาณโทรศัพท์ ไม่มีอินเทอร์เน็ต และหน้าจอดับอยู่ ชิปเซ็ต Wi-Fi/Bluetooth ในสมาร์ตโฟนจะยังคง "ส่งสัญญาณค้นหาเครือข่าย" (**Active Scan / Probe Request**) ออกมาในอากาศเป็นระยะๆ ตามธรรมชาติ ระบบ Sniffer ของเราจะดักรับสัญญาณนี้เพื่อนำค่าความแรงสัญญาณ (**RSSI**) ไปคำนวณหาระยะทางและระบุพิกัดตำแหน่ง (**Localization**)
+
+```
+ [📱 สมาร์ตโฟนผู้ประสบภัย] (หน้าจอดับ / ไม่มีเน็ต)
+           │
+           │  (แผ่คลื่น Probe Request ทุกๆ 5-60 วินาที)
+           ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │   🛰️ สถานีดักจับพาสซีฟ (Passive Sniffer Nodes: ESP32)     │
+ │   • Promiscuous Mode ดักจับเฟรม 802.11 Management       │
+ │   • ตรวจวัดค่า RSSI (Signal Strength)                   │
+ │   • ถอดรหัส Sequence Number เพื่อรับมือ MAC Randomization   │
+ └─────────────────────────────────────────────────────────┘
+           │
+           ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │   📍 อัลกอริทึมประมวลผลพิกัด (Localization Engine)        │
+ │   • RSSI-to-Distance Path Loss Modeling                 │
+ │   • Multilateration / Trilateration (หาพิกัดกู้ภัย)         │
+ └─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📂 โครงสร้างคลังข้อมูล (Repository Structure)
 
 ```
 ProjectCo-op/
+├── 📁 share_friend/                           <-- 🌟 [คลังเอกสารและแล็บที่กำลังทำงานอยู่ - Sync กับเพื่อน]
+│   ├── 🧪 Experiments/01_03_wifi_sniffer/    <-- ซอร์สโค้ดเฟิร์มแวร์ ESP32 Sniffer + คู่มือ Lab Guide
+│   ├── 📚 Research/                          <-- สรุปเนื้อหาวิชาการ IEEE 802.11 และงานวิจัยต่างประเทศ
+│   ├── 📋 Todo/                              <-- กระดานสถานะความคืบหน้า (Kanban Board)
+│   └── 📑 Wi-Fi Study Guide.md               <-- แผนที่การศึกษา 16 หัวข้อหลักสำหรับปริญญานิพนธ์
 │
-├── README.md                                 <-- [คุณอยู่ที่นี่] สารบัญหลักและคู่มือการใช้งาน
+├── 📁 docs/                                   <-- เอกสารสถาปัตยกรรมและบทวิเคราะห์คลื่นวิทยุ
+│   ├── 08_smartphone_rf_sensing.md           <-- [แกนหลัก 1] สถาปัตยกรรม Passive Smartphone RF Sniffing
+│   └── 09_smartphone_rf_signals_analysis.md   <-- [แกนหลัก 2] บทวิเคราะห์คลื่นวิทยุสมาร์ตโฟนเชิงลึก
 │
-├── reports_and_notes/                        <-- [รวบรวมรายงานและบันทึกประจำวัน]
-│   ├── ADVISOR_REPORT.md                     <-- สรุปรายงานยุทธศาสตร์สำหรับนำเสนออาจารย์
-│   ├── 2026-09-13.md                         <-- บันทึกการวิจัยประจำวัน (Kickoff Core Project)
-│   ├── 2026-09-18.md                         <-- บันทึกการวิจัยประจำวัน (RF Emissions, Checkpoint & SX1262)
-│   ├── Untitled.base                         <-- Obsidian Table View Base
-│   └── Untitled.canvas                       <-- Obsidian Canvas
+├── 📁 reports_and_notes/                      <-- บันทึกการวิจัยประจำวันและรายงานนำเสนออาจารย์
+│   ├── ADVISOR_REPORT.md                     <-- สรุปรายงานยุทธศาสตร์ฉบับนำเสนออาจารย์ที่ปรึกษา
+│   └── 2026-09-13.md                         <-- บันทึกการวิจัย Kickoff Core Project
 │
-├── docs/                                     <-- [เอกสารงานวิจัยหลักของโครงการปัจจุบัน]
-│   ├── 08_smartphone_rf_sensing.md           <-- [แกนหลัก 1] สถาปัตยกรรม Passive Smartphone RF Sniffing & LoRa Mesh
-│   └── 09_smartphone_rf_signals_analysis.md   <-- [แกนหลัก 2] บทวิเคราะห์คลื่นวิทยุสมาร์ตโฟนเชิงลึก (Wi-Fi, BLE, Cellular, UWB)
-│
-├── assets/images/                            <-- รูปภาพ 3D Concept Architecture และไดอะแกรมสถาปัตยกรรม
-│
-├── process_and_workflow/                     <-- แผนและกระบวนการทำงานจริง (Roadmap & Logs)
-│   ├── project_roadmap.md                    <-- ลำดับขั้นการวิจัย 5 ระยะหลัก
-│   └── conversation_history.md               <-- บันทึกประวัติการพูดคุยและข้อตกลงโครงการทั้งหมด
-│
-├── share_friend/                             <-- [โฟลเดอร์แชร์เพื่อนผ่าน Obsidian - ซิงค์งานวิจัยร่วมกัน]
-│
-└── archive_initial_research/                 <-- [คลังเก็บงานวิจัยและเอกสารตั้งต้น]
-    ├── docs_01_to_07/                        <-- เอกสารวิจัยเดิม Docs 01 ถึง 07 (Meshtastic, LIMA, AlLoRa, ฯลฯ)
-    ├── papers_pdf/                           <-- ไฟล์เปเปอร์วิชาการต้นฉบับทั้ง 4 ฉบับ
-    ├── exports_for_notebooklm/               <-- ไฟล์สรุปเดิมสำหรับ NotebookLM
-    └── research_notes/                       <-- บันทึกการวิเคราะห์เปรียบเทียบเดิม
+├── 📁 process_and_workflow/                   <-- แผนภูมิและกระบวนการทำงานวิศวกรรม
+└── 📁 archive_initial_research/               <-- คลังเก็บงานวิจัยและเอกสารตั้งต้น
 ```
 
 ---
 
-## 📑 สรุปย่อสาระสำคัญของเอกสารหลัก (Active Core Specifications)
+## 🔬 เฟิร์มแวร์และการทดลองจริง (Hands-On Labs)
 
-| รหัสเอกสาร | ชื่อเรื่อง / สเปกทางวิศวกรรม | เทคโนโลยีหลัก | หัวใจสำคัญ | ลิงก์เอกสาร |
-| :--- | :--- | :--- | :--- | :--- |
-| **DOC-08** | Passive Smartphone RF Sniffing & Rescue | **Multi-RAT Sniffing (Wi-Fi/BLE) + LoRa Mesh** | ดักจับคลื่นมือถือคนหลงป่าไร้แอป + ส่งผลผ่าน LoRa Mesh หาพิกัด Trilateration | [อ่านสเปก DOC-08](file:///d:/ProjectLoRa/docs/08_smartphone_rf_sensing.md) |
-| **DOC-09** | Smartphone RF Emissions & Passive Detection | **Emitted RF Taxonomy (Wi-Fi, BLE, Cellular, UWB)** | เจาะลึกกลไก Probe Request, BLE Background Beacons, Doze Mode, และ Dual-RAT ESP32 | [อ่านสเปก DOC-09](file:///d:/ProjectLoRa/docs/09_smartphone_rf_signals_analysis.md) |
+โค้ดตัวอย่างและคู่มือปฏิบัติการทดลองจริงบนฮาร์ดแวร์ **ESP32**:
 
-
----
-
-## 📊 ตารางเปรียบเทียบโปรโตคอลแบบเข้าใจง่าย (Protocol Comparison)
-
-| มิติการเปรียบเทียบ | 🌐 Meshtastic | ⚡ LIMA | 📦 AlLoRa | 🏷️ LoRaWAN Relay (TS011) |
-| :--- | :--- | :--- | :--- | :--- |
-| **1. โครงสร้างเครือข่าย** | **Peer-to-Peer Mesh**<br>(กระจายตัว ไม่มีศูนย์กลาง) | **Tree-based Mesh Overlay**<br>(ซ้อนทับบน LoRaWAN) | **Request-Reply / Hybrid**<br>(สลับ P2P เป็น Mesh เมื่อหลุด) | **Single-hop Relay**<br>(ทวนสัญญาณขั้นเดียว) |
-| **2. อัลกอริทึม Routing** | **Managed Flooding**<br>(บรอดแคสต์ต่อๆ กันไป) | **Reverse Path Forwarding (RPF)**<br>(คำนวณ Cost จาก -RSSI) | **On-demand Flooding Relay**<br>(Relay เฉพาะเมื่อสั่งเปิดบิต) | **Fixed Direct Relay**<br>(จับคู่โหนดคงที่) |
-| **3. รองรับ LoRaWAN เดิมไหม?**| ❌ **ไม่รองรับ**<br>(เป็นระบบปิดของตัวเอง) | ✅ **รองรับ 100%**<br>(ไม่ต้องแก้โหนดหรือเซิร์ฟเวอร์) | ❌ **ไม่รองรับ**<br>(สร้างโปรโตคอลเฉพาะขึ้นมาเอง) | ⚠️ **ต้องอัปเกรด**<br>(ต้องใช้ FW ตามสเปก TS011) |
-| **4. ประเภทข้อมูลหลัก** | ข้อความสั้น / พิกัด GPS | ข้อมูลเซ็นเซอร์ IoT ทั่วไป | **ข้อมูลขนาดใหญ่ / ไฟล์หลาย KB** | ข้อมูลเซ็นเซอร์ IoT ทั่วไป |
-| **5. การรับมือคลื่นชนกัน** | Random Delay Backoff | Stagger Delay + Overhearing | Sleep bit + Random Backoff | Wake-on-Radio (WOR) Timing |
-| **6. จุดเด่นที่สุด** | **ติดตั้งง่ายสุด** ไม่ต้องมีเสาเน็ต ใช้แค่มือถือต่อบลูทูธ | **ประหยัดไฟโหนดสูงสุด** ขยายระยะทาง LoRaWAN ได้หลาย Hop | **ส่งข้อมูลก้อนใหญ่ได้ชัวร์** มีระบบแบ่งชิ้นและประกอบไฟล์ | ได้รับการรับรองตามมาตรฐานสมาคม LoRa Alliance |
-| **7. ข้อจำกัดสำคัญ** | จราจรติดขัดง่ายถ้ามีหลายสิบโหนด (Broadcast Storm) | ต้องมีโหนด Router หนาแน่นพอให้ลิงก์ที่ SF7 ตลอดสาย | โหนดเซ็นเซอร์ส่งเตือนเองไม่ได้ ต้องรอ Gateway เรียกถาม | ขยายได้แค่ 1 Hop และรองรับลูกข่ายได้ไม่เกิน 16 ตัว |
+| ลำดับ | รายการ | รายละเอียด | ลิงก์เข้าสู่เอกสาร |
+| :---: | :--- | :--- | :--- |
+| **01** | **ESP32 Wi-Fi Sniffer Code** | ซอร์สโค้ด Arduino ดักจับ Probe Request, แยก MAC Randomization, บันทึก Sequence Number | [`esp32_wifi_sniffer.ino`](share_friend/Experiments/01_03_wifi_sniffer/esp32_wifi_sniffer.ino) |
+| **02** | **Lab Guide 01–03** | คู่มือการทดลอง 4 ขั้นตอน: วัด RSSI vs ระยะทาง, ทดสอบ Doze Mode, ส่อง MAC Randomization | [`LAB_GUIDE_01_03.md`](share_friend/Experiments/01_03_wifi_sniffer/LAB_GUIDE_01_03.md) |
+| **03** | **Wi-Fi Study Guide** | แผนที่การศึกษา 16 สาระสำคัญของ IEEE 802.11 สำหรับวิทยานิพนธ์ | [`Wi-Fi Study Guide.md`](share_friend/Wi-Fi%20Study%20Guide.md) |
 
 ---
 
-## 🔍 เอกสารวิเคราะห์และกระบวนการทำงาน (Research & Processes)
+## 📑 สรุปงานวิจัยที่สำคัญ (Key Research Modules)
 
-* 📊 **[ตารางเปรียบเทียบโปรโตคอลและ 4 กลุ่มสถาปัตยกรรมวิชาการ (Comparison Matrix)](file:///d:/ProjectLoRa/research_notes/comparison_matrix.md):** รวบรวมการวิเคราะห์ 4 กลุ่มงานวิจัย (Tree/TDMA, Concurrent TX, P2P/Gateway-Free, Linear Multi-hop) พร้อมตารางเปรียบเทียบระบบจริงและ Decision Tree
-* 📊 **[ตารางเปรียบเทียบโปรโตคอลเดิม (Comparison Matrix)](file:///d:/ProjectLoRa/archive_initial_research/research_notes/comparison_matrix.md):** รวบรวมการวิเคราะห์ 4 กลุ่มงานวิจัยเดิม (Tree/TDMA, Concurrent TX, P2P, Linear Multi-hop)
-* 🚀 **[ไอเดีย R&D เดิม (Future Innovations)](file:///d:/ProjectLoRa/archive_initial_research/research_notes/future_rd_and_innovation.md):** 5 ช่องว่างเทคโนโลยีเดิมและโจทย์วิจัยต่อยอด
-* 🎬 **[คู่มือ Prompt สไลด์เดิม (Slides Guide)](file:///d:/ProjectLoRa/archive_initial_research/research_notes/slides_source_and_prompts.md):** รวบรวมคำสั่ง Prompt และร่างสไลด์เดิมบน NotebookLM
-* 📚 **[แหล่งอ้างอิงวิชาการเดิม (References & Citations)](file:///d:/ProjectLoRa/archive_initial_research/research_notes/references_and_citations.md):** รวมรายการบทความวิจัย IEEE/Elsevier/arXiv เดิม
-* 🛠️ **[กระบวนการทำงานและแผนงานวิจัย (Project Roadmap)](file:///d:/ProjectLoRa/process_and_workflow/project_roadmap.md):** แผนการดำเนินงานวิศวกรรม 5 ระยะหลัก
-* 📝 **[บันทึกประวัติการสนทนาและข้อตกลง (Conversation History)](file:///d:/ProjectLoRa/process_and_workflow/conversation_history.md):** บันทึก Timeline ประวัติการตัดสินใจและการคุยกันทุกขั้นตอนของโครงการ
+* 📡 **[IEEE 802.11 Scanning](share_friend/Research/สรุป/IEEE%20802.11%20Scanning/01_IEEE_802.11_Scanning.md):** กลไกการกวาดหาสัญญาณของสมาร์ตโฟน (Active vs Passive Scan)
+* 📬 **[Probe Request Frames](share_friend/Research/สรุป/IEEE%20802.11%20Scanning/02_Probe_Request.md):** โครงสร้างเฟรม 802.11 Management Subtype `0x0040` และพฤติกรรมการส่ง
+* 🔄 **[Passive vs Active Trade-offs](share_friend/Research/สรุป/IEEE%20802.11%20Scanning/03_Passive_vs_Active_Scan.md):** การเปรียบเทียบข้อจำกัดด้านพลังงานและโอกาสในการตรวจจับ
+* ⚡ **[Unconventional RF & Side-Channel](share_friend/Research/สรุป/02_Smartphone_Signals_and_Unconventional_Emissions.md):** บทวิเคราะห์คลื่นแม่เหล็กไฟฟ้าและการรั่วไหลทางกายภาพ (SMPS, OLED PWM, MagSafe, NLJD)
+* 📚 **[Academic Papers Synthesis](share_friend/Research/yo_research/yopaper.md):** สรุปเปเปอร์วิชาการระดับนานาชาติ 5 ฉบับ (ACM IMC, ACM WiSec) และมาตรฐาน IEEE Std 802.11-2024
 
 ---
 
-## 💡 คำแนะนำสำหรับการถาม-ตอบกับผู้ช่วย AI ในอนาคต
-เมื่อต้องการถามคำถามเจาะจง สามารถอ้างอิงชื่อไฟล์หรือหัวข้อได้ทันที เช่น:
-* *"จากไฟล์ `02_lima_lorawan_mesh.md` ช่วยอธิบายการเลือก DER เพิ่มเติมหน่อย"*
-* *"ช่วยเขียนโค้ดตามแนวคิด Dual-Priority ใน `future_rd_and_innovation.md`"*
-* *"ถ้าจะเริ่มทำตาม Phase 3 ใน `project_roadmap.md` ต้องติดตั้งเครื่องมือ ns-3 อย่างไร"*
-#   P r o j e c t C o - o p  
- 
+<div align="center">
+  <sub>โครงงานวิจัยสหกิจศึกษา (Cooperative Education Project) · อัปเดตล่าสุด: กันยายน 2026</sub>
+</div>
