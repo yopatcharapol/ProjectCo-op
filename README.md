@@ -63,6 +63,11 @@ ProjectCo-op/
 ├── 🧭 PROJECT_EVOLUTION.md                    <-- [เอกสารสำคัญ] ไทม์ไลน์วิจัย 4 เฟสและเกณฑ์การเลือกหัวข้อ
 ├── 📖 README.md                               <-- [คุณอยู่ที่นี่] ภาพรวมโครงการและสารบัญหลัก
 │
+├── 📁 experiments/                            <-- 🧪 [คลังผลการทดลองและโค้ด] firmware/, raw_logs/, reports/
+│   ├── 💻 firmware/                           <-- โค้ดทดสอบบนบอร์ด ESP32-Nano (Arduino / PlatformIO)
+│   ├── 📊 raw_logs/                           <-- ข้อมูลดิบจาก Serial Monitor (CSV / Logs)
+│   └── 📑 reports/                            <-- รายงานสรุปผลการทดลองและกราฟวิเคราะห์ (Markdown)
+│
 ├── 📁 share_friend/                           <-- 🌟 [คลังค้นคว้าหลัก Phase 2 - กำลังศึกษาและทดลองร่วมกัน]
 │   ├── 🧪 Experiments/01_03_wifi_sniffer/    <-- โค้ดเฟิร์มแวร์ ESP32 Sniffer + คู่มือ Lab Guide 01–03
 │   ├── 📚 Research/                          <-- สรุปเจาะลึกมาตรฐาน IEEE 802.11 และ 5 เปเปอร์สากล

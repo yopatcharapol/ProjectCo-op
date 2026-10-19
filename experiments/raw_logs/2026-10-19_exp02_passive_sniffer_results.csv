@@ -1,0 +1,51 @@
+# EXP-02 Raw Data: Passive Wi-Fi Sniffer on ESP32-Nano
+# Date: 2026-10-19 21:20
+# Columns: timestamp_ms,pkt_id,channel,rssi_dbm,seq_num,mac,mac_type,ssid,test_case
+
+# Case A: Screen ON
+10325,1,11,-52,1490,E6:36:33:FD:3A:91,RANDOM,"Wildcard","a_screen_on"
+10326,2,11,-53,1491,E6:36:33:FD:3A:91,RANDOM,"Wildcard","a_screen_on"
+33630,3,1,-98,817,6E:8D:3F:20:0A:D0,RANDOM,"Wildcard","a_screen_on_far"
+40067,4,6,-52,1520,5A:6B:11:5E:03:0B,RANDOM,"Wildcard","a_screen_on"
+40212,5,6,-21,1527,5A:6B:11:5E:03:0B,RANDOM,"Wildcard","a_screen_on_close"
+40469,6,11,-20,1537,5A:6B:11:5E:03:0B,RANDOM,"Wildcard","a_screen_on_close"
+40514,7,11,-18,1538,5A:6B:11:5E:03:0B,RANDOM,"Wildcard","a_screen_on_close"
+40514,8,11,-18,1539,5A:6B:11:5E:03:0B,RANDOM,"Wildcard","a_screen_on_close"
+
+# Case B: Screen OFF (Doze Mode)
+16778,1,1,-24,1620,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+16779,2,1,-23,1621,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+16874,3,1,-21,1623,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+17038,4,1,-60,1628,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+17039,5,1,-60,1629,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+34757,6,1,-37,1909,C0:A5:E8:A6:17:06,REAL,"Wildcard","b_other_device"
+38662,7,6,-23,1695,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off_interval_21s"
+38789,8,11,-55,1698,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+38790,9,11,-57,1699,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+38927,10,11,-20,1704,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+38928,11,11,-20,1705,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","b_screen_off"
+
+# Case C: Motion Wake-up (Shaking / Moving Phone)
+9678,1,1,-21,1906,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+9679,2,1,-21,1907,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+9754,3,6,-46,1909,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+9907,4,6,-20,1914,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+9980,5,6,-26,1916,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+9982,6,6,-27,1917,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+10027,7,6,-26,1919,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+10164,8,6,-49,1925,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst"
+18007,9,11,-38,1961,C0:A5:E8:A6:17:06,REAL,"Wildcard","c_other_device"
+23924,10,11,-96,1366,CE:4E:A4:35:B9:BC,RANDOM,"Wildcard","c_neighbor_far"
+44648,11,6,-95,2866,B0:E4:5C:74:A8:D2,REAL,"Thaweeyont-PO(5G)","c_directed_probe"
+49934,12,1,-48,1972,C0:A5:E8:A6:17:06,REAL,"Wildcard","c_other_device"
+50222,13,6,-45,1977,C0:A5:E8:A6:17:06,REAL,"Wildcard","c_other_device"
+51775,14,6,-93,1593,7E:02:8B:84:47:9C,RANDOM,"Wildcard","c_neighbor_far"
+51795,15,6,-93,1594,7E:02:8B:84:47:9C,RANDOM,"Wildcard","c_neighbor_far"
+52973,16,1,-30,2038,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst2"
+52973,17,1,-30,2039,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst2"
+53205,18,1,-50,2046,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst2"
+53279,19,6,-22,2048,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst2"
+53280,20,6,-22,2049,D6:6E:EA:14:9B:15,RANDOM,"Wildcard","c_shake_burst2"
+54555,21,1,-95,1682,AA:EE:0D:EB:8A:10,RANDOM,"Wildcard","c_neighbor_far"
+54576,22,1,-94,1683,AA:EE:0D:EB:8A:10,RANDOM,"Wildcard","c_neighbor_far"
+
