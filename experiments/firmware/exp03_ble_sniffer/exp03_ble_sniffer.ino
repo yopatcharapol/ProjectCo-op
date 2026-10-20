@@ -1,37 +1,53 @@
 /*
  * ======================================================================================
- * 📡 EXP-03: ESP32-Nano BLE (Bluetooth Low Energy) RF Emission Sniffer
+ * 📡 EXP-03: ESP32-Nano BLE (Bluetooth Low Energy) RF Emission Sniffer (v2 - Diagnostic)
  * ======================================================================================
  * วัตถุประสงค์:
  * ดักจับคลื่นแม่เหล็กไฟฟ้าในย่าน Bluetooth Low Energy (2.4 GHz ISM Band)
- * ที่แผ่ออกมาจากสมาร์ตโฟน (Android / iPhone) เช่น:
- * 1. Google Fast Pair / Nearby Share / Quick Share Beacons (Xiaomi/Honor/Samsung)
- * 2. Apple Find My / Continuity Offline Beacons
- * 3. General BLE Advertisements (ADV_IND, ADV_NONCONN_IND)
+ * ที่แผ่ออกมาจากสมาร์ตโฟนและอุปกรณ์รอบข้าง เช่น:
+ * 1. Google Fast Pair / Quick Share / Nearby Share (เมื่อเปิดแชร์ใกล้เคียงหรือปลดล็อกจอ)
+ * 2. Honor Share / Xiaomi Mi Share Beacons
+ * 3. Apple Find My / Continuity (iPhone / iPad / AirPods / AirTag)
+ * 4. Smartwatch / Mi Band / หูฟังไร้สาย TWS
  * 
- * 💡 ฟีเจอร์พิเศษ:
- * - สแกนความไวสูงแบบ Full Duty Cycle (Interval: 100ms, Window: 99ms)
- * - ปิด Duplicate Filter เพื่อวัดคาบเวลาการเต้นของชีพจรคลื่น (Pulse Interval: delta_t)
- * - ถอดรหัส Company Identifier (Apple, Google, Xiaomi, Samsung, Microsoft) อัตโนมัติ
- * - คุณสามารถพิมพ์ป้ายกำกับ เช่น POCO, HONOR, 1m, 3m ลงใน Serial Monitor ได้เลย!
+ * 🔧 สิ่งที่ปรับปรุงใน v2:
+ * - เพิ่มระบบ Heartbeat แจ้งสถานะทุกๆ 3 วินาที (ไม่ปล่อยให้หน้าจอขาวว่างเปล่า)
+ * - ปรับแต่ง Window/Interval (80/100 ms) ให้เสถียรและไม่บล็อกคิวส่งของ USB CDC
+ * - พิมพ์อะไรก็ได้ลงใน Serial Monitor แล้วกด Enter เพื่อเปลี่ยนป้ายกำกับหรือดูเมนูได้ทันที
  * ======================================================================================
  */
 
 #include <Arduino.h>
+#include <nvs_flash.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 
-uint32_t blePacketCount = 0;
+const int SCAN_TIME_SEC = 3; // สแกนรอบละ 3 วินาที
+
+uint32_t totalBlePackets = 0;
+uint32_t cyclePackets = 0;
+uint32_t scanCycleCount = 0;
 unsigned long lastBlePacketTimeMs = 0;
 
-// ป้ายกำกับปัจจุบัน (สามารถเปลี่ยนผ่าน Serial Monitor ได้ตลอดเวลา)
-String currentTag = "SCANNING";
+String currentTag = "BLE_SCAN";
+
+void printHeader() {
+    Serial.println("\n================================================================================");
+    Serial.println("📡 EXP-03 (v2): ESP32-Nano Bluetooth Low Energy (BLE) RF Sniffer");
+    Serial.println("CSV Header: timestamp_ms,pkt_id,rssi_dbm,delta_t_ms,mac,mac_type,company,name,service,tag");
+    Serial.println("================================================================================");
+    Serial.println("💡 ทริคการทดสอบ BLE บนมือถือ Android (Honor / POCO):");
+    Serial.println("   1. เปิด Bluetooth และลองเปิดเมนู 'Quick Share / แชร์ใกล้เคียง' หรือหน้าจับคู่บลูทูธ");
+    Serial.println("   2. หรือลองเปิดฝากล่องหูฟังไร้สาย / นาฬิกาสมาร์ตวอทช์ ใกล้ๆ บอร์ด");
+    Serial.println("--------------------------------------------------------------------------------\n");
+}
 
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     void onResult(BLEAdvertisedDevice advertisedDevice) {
-        blePacketCount++;
+        totalBlePackets++;
+        cyclePackets++;
         unsigned long now = millis();
 
         unsigned long deltaMs = 0;
@@ -42,20 +58,19 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 
         int rssi = advertisedDevice.getRSSI();
         String macStr = String(advertisedDevice.getAddress().toString().c_str());
-        
-        // ตรวจสอบประเภท MAC (Random Private vs Public)
-        // บิตที่ 6 และ 7 ของไบต์แรก หรือเช็คจาก BLE Address Type
+        macStr.toUpperCase();
+
         esp_ble_addr_type_t addrType = advertisedDevice.getAddressType();
         String macTypeStr = (addrType == BLE_ADDR_TYPE_RANDOM) ? "RANDOM" : "PUBLIC";
 
-        // ถอดรหัสชื่ออุปกรณ์ (ถ้ามีส่งมาใน Scan Response)
+        // ชื่ออุปกรณ์
         String devName = "Unknown";
         if (advertisedDevice.haveName()) {
             devName = String(advertisedDevice.getName().c_str());
-            devName.replace(",", "_"); // ป้องกัน CSV เพี้ยน
+            devName.replace(",", "_");
         }
 
-        // ถอดรหัสรหัสบริษัทผู้ผลิต (Manufacturer Company ID)
+        // รหัสบริษัทผู้ผลิต (Manufacturer Specific Data)
         String companyStr = "None";
         if (advertisedDevice.haveManufacturerData()) {
             std::string mData = advertisedDevice.getManufacturerData();
@@ -70,27 +85,30 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
                 else if (companyId == 0x00E0) companyStr += "(Google)";
                 else if (companyId == 0x038F) companyStr += "(Xiaomi)";
                 else if (companyId == 0x0006) companyStr += "(Microsoft)";
-                else if (companyId == 0x02E5) companyStr += "(Espressif)";
+                else if (companyId == 0x027D) companyStr += "(Huawei/Honor)";
             }
         }
 
-        // ตรวจสอบ Service UUID (เช่น Google Fast Pair, Find My)
+        // Service UUID (เช่น Fast Pair, Nearby Share, Mi Share)
         String serviceStr = "None";
         if (advertisedDevice.haveServiceUUID()) {
             serviceStr = String(advertisedDevice.getServiceUUID().toString().c_str());
             if (serviceStr.indexOf("fe9f") >= 0 || serviceStr.indexOf("FE9F") >= 0) {
                 serviceStr = "0xFE9F(GoogleFastPair)";
+            } else if (serviceStr.indexOf("fef3") >= 0 || serviceStr.indexOf("FEF3") >= 0) {
+                serviceStr = "0xFEF3(GoogleNearby/QuickShare)";
+            } else if (serviceStr.indexOf("fd5a") >= 0 || serviceStr.indexOf("FD5A") >= 0) {
+                serviceStr = "0xFD5A(SamsungFind)";
             } else if (serviceStr.indexOf("feed") >= 0 || serviceStr.indexOf("FEED") >= 0) {
                 serviceStr = "0xFEED(Tile/FindMy)";
             }
         }
 
-        // ส่งออก CSV:
-        // CSV_BLE,timestamp_ms,pkt_id,rssi_dbm,delta_t_ms,mac,mac_type,company,name,service,tag
+        // ส่งออก CSV ทันทีที่จับได้:
         Serial.print("CSV_BLE,");
         Serial.print(now);
         Serial.print(",");
-        Serial.print(blePacketCount);
+        Serial.print(totalBlePackets);
         Serial.print(",");
         Serial.print(rssi);
         Serial.print(",");
@@ -110,46 +128,64 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     }
 };
 
-BLEScan* pBLEScan;
+BLEScan* pBLEScan = nullptr;
 
 void setup() {
     Serial.begin(115200);
-    delay(1500);
+    // รอให้ USB CDC เชื่อมต่อกับคอมพิวเตอร์สูงสุด 3 วินาที
+    unsigned long startWait = millis();
+    while (!Serial && (millis() - startWait < 3000)) {
+        delay(50);
+    }
+    delay(500);
 
-    Serial.println("\n================================================================================");
-    Serial.println("📡 EXP-03: ESP32-Nano Bluetooth Low Energy (BLE) RF Sniffer");
-    Serial.println("CSV Header: timestamp_ms,pkt_id,rssi_dbm,delta_t_ms,mac,mac_type,company,name,service,tag");
-    Serial.println("================================================================================");
-    Serial.println("💡 คำแนะนำ: คุณสามารถพิมพ์ป้ายกำกับ เช่น POCO, HONOR, 1m ลงใน Serial Monitor แล้วกด Enter");
-    Serial.print(">>> ป้ายกำกับเริ่มต้น: ");
-    Serial.println(currentTag);
-    Serial.println("--------------------------------------------------------------------------------\n");
+    nvs_flash_init();
+    printHeader();
 
-    BLEDevice::init("Radar_Sniffer");
+    BLEDevice::init("");
     pBLEScan = BLEDevice::getScan();
-    pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-    pBLEScan->setActiveScan(true); // ขอ Scan Response เพื่อดู Device Name
-    pBLEScan->setInterval(100);    // สแกนทุก 100 ms
-    pBLEScan->setWindow(99);       // เฝ้าฟัง 99 ms (99% Duty Cycle)
-    pBLEScan->setDuplicateFilter(false); // สำคัญมาก: ไม่ตัดแพ็กเก็ตซ้ำ เพื่อดูความถี่การยิงจริง
+    pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(), true);
+    pBLEScan->setActiveScan(true); // ส่ง SCAN_REQ เพื่อดึงชื่อและข้อมูลเพิ่มเติม
+    pBLEScan->setInterval(100);    // 100 ms
+    pBLEScan->setWindow(80);       // 80 ms (เว้น 20 ms ให้ส่ง SCAN_REQ และคืนคิว USB Serial)
+
+    Serial.println("✅ [SYSTEM] เริ่มต้นระบบ BLE Radar สำเร็จ! กำลังเริ่มกวาดคลื่น...\n");
 }
 
 void loop() {
-    // ตรวจสอบข้อความจากผู้ใช้ผ่าน Serial Monitor เพื่อเปลี่ยน Tag
+    // รับคำสั่งเปลี่ยนป้ายกำกับจาก Serial Monitor
     if (Serial.available() > 0) {
         String input = Serial.readStringUntil('\n');
         input.trim();
         if (input.length() > 0) {
-            currentTag = input;
-            Serial.println();
-            Serial.print("🚩 >>> [TAG_CHANGED] เปลี่ยนป้ายกำกับเป็น: ");
-            Serial.print(currentTag);
-            Serial.println(" <<<");
-            Serial.println();
+            if (input.equalsIgnoreCase("help") || input.equalsIgnoreCase("h")) {
+                printHeader();
+            } else {
+                currentTag = input;
+                Serial.println();
+                Serial.print("🚩 >>> [TAG_CHANGED] เปลี่ยนป้ายกำกับเป็น: ");
+                Serial.print(currentTag);
+                Serial.println(" <<<");
+                Serial.println();
+            }
         }
     }
 
-    // เริ่มสแกนเป็นรอบๆ รอบละ 5 วินาที แล้ววนสแกนต่อทันทีแบบ Non-blocking
-    pBLEScan->start(5, false);
-    pBLEScan->clearResults(); // เคลียร์บัฟเฟอร์ในแรมเพื่อไม่ให้ล้น
+    scanCycleCount++;
+    cyclePackets = 0;
+
+    // สแกนเป็นเวลา 3 วินาที
+    pBLEScan->start(SCAN_TIME_SEC, false);
+
+    // หากในรอบ 3 วินาทีนี้ไม่มีคลื่นเลย ให้พิมพ์ Heartbeat บอกว่าบอร์ดยังทำงานปกติ!
+    if (cyclePackets == 0) {
+        Serial.print("⏳ [BLE_HEARTBEAT รอบที่ #");
+        Serial.print(scanCycleCount);
+        Serial.print("] กำลังฟังคลื่น 2.4GHz BLE... (ยังไม่พบการปล่อย Beacon ในรอบนี้ | สะสมรวม: ");
+        Serial.print(totalBlePackets);
+        Serial.println(" แพ็กเก็ต)");
+    }
+
+    pBLEScan->clearResults();
+    delay(50);
 }
