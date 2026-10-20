@@ -21,6 +21,7 @@
 | **EXP-01** | **Active Scan & Distance vs RSSI**<br>วัดระดับความแรงสัญญาณเทียบกับระยะห่างจริง (1m, 2m, 4m) | [💻 โค้ด EXP-01](firmware/exp01_wifi_scanner/exp01_wifi_scanner.ino) | [📊 ข้อมูลดิบ EXP-01](raw_logs/2026-10-19_exp01_wifi_nano_distance_test.csv) | [📑 รายงาน EXP-01](reports/exp01_wifi_nano_profiling.md) |
 | **EXP-02** | **Passive Wi-Fi Sniffing & Doze/Motion**<br>ดักฟัง Probe Request ตอนปิดเน็ต + ทดสอบจอดับ vs เขย่าเครื่อง | [💻 โค้ด EXP-02](firmware/exp02_passive_sniffer/exp02_passive_sniffer.ino) | [📊 ข้อมูลดิบ EXP-02](raw_logs/2026-10-19_exp02_passive_sniffer_results.csv) | [📑 รายงาน EXP-02](reports/exp02_passive_sniffer_profiling.md) |
 | **DATASET-A** | **Systematic Outdoor Distance Profiling (1m – 50m)**<br>วัดระยะจริง 1m–50m ทะลุต้นไม้บังมิด (Foliage NLOS) + ที่ต่ำ + ช่องเปิด (540+ ตัวอย่าง) | [💻 โค้ด Sniffer Auto-Tag](firmware/dataset_a_distance_sniffer/dataset_a_distance_sniffer.ino) | [📊 ข้อมูลดิบชุด A (540+ แถว)](raw_logs/dataset_a_distance_test.csv) | [📑 รายงานฉบับสมบูรณ์ชุด A](reports/dataset_a_distance_profiling.md) |
+| **DATASET-B** | **Temporal & Motion Profiling (Doze vs Walking)**<br>ศึกษาพฤติกรรมแกนเวลา: วางนิ่งหลับลึก (Doze Mode) vs ขยับเดินปลุก Wi-Fi | [💻 โค้ด Motion Sniffer](firmware/dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino) | [📊 ข้อมูลดิบชุด B](raw_logs/dataset_b_motion_test.csv) | [📑 รายงานชุด B (กำลังทดสอบ)](reports/dataset_b_motion_profiling.md) |
 
 ---
 
@@ -93,16 +94,19 @@ experiments/
 ├── 💻 firmware/                               <-- ซอร์สโค้ด Arduino สำหรับอัปโหลดลง ESP32
 │   ├── exp01_wifi_scanner/exp01_wifi_scanner.ino
 │   ├── exp02_passive_sniffer/exp02_passive_sniffer.ino
-│   └── dataset_a_distance_sniffer/dataset_a_distance_sniffer.ino
+│   ├── dataset_a_distance_sniffer/dataset_a_distance_sniffer.ino
+│   └── dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino
 │
 ├── 📊 raw_logs/                               <-- บันทึกข้อมูลดิบจาก Serial Monitor (.csv)
 │   ├── 2026-10-19_exp01_wifi_nano_distance_test.csv
 │   ├── 2026-10-19_exp02_passive_sniffer_results.csv
-│   └── dataset_a_distance_test.csv
+│   ├── dataset_a_distance_test.csv
+│   └── dataset_b_motion_test.csv
 │
 └── 📑 reports/                                <-- เอกสารรายงานผลการทดลองเชิงวิชาการฉบับเต็ม
     ├── exp01_wifi_nano_profiling.md
     ├── exp02_passive_sniffer_profiling.md
-    └── dataset_a_distance_profiling.md
+    ├── dataset_a_distance_profiling.md
+    └── dataset_b_motion_profiling.md
 ```
 
