@@ -382,3 +382,4 @@ timestamp_ms,pkt_id,channel,rssi_dbm,delta_t_ms,seq_num,mac,mac_type,category,su
 57150,381,11,-38,1696,0,C0:A5:E8:A6:17:06,REAL,QOS_NULL,QOS_NULL,TO_DS,"Wildcard"
 57983,382,11,-37,833,0,C0:A5:E8:A6:17:06,REAL,QOS_NULL,QOS_NULL,TO_DS,"Wildcard"
 58109,383,11,-35,126,0,C0:A5:E8:A6:17:06,REAL,QOS_NULL,QOS_NULL,TO_DS,"Wildcard"
+

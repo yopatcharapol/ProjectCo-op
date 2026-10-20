@@ -27,10 +27,10 @@
 #include <nvs_flash.h>
 #include <WiFi.h>
 
-// ช่องสัญญาณหลักที่จะทำการสลับ (Channel Hopping 1, 6, 11)
-const uint8_t CHANNELS[] = {1, 6, 11};
-const int NUM_CHANNELS = 3;
-const unsigned long HOP_INTERVAL_MS = 300; // สลับช่องทุก 300ms เพื่อความครอบคลุมสูง
+// ช่องสัญญาณที่จะทำการสลับ (กวาดครบ 11 ช่องย่าน 2.4 GHz โดยวนช่องหลัก 1, 6, 11 เป็นแกนนำ)
+const uint8_t CHANNELS[] = {1, 6, 11, 2, 3, 4, 5, 7, 8, 9, 10};
+const int NUM_CHANNELS = 11;
+const unsigned long HOP_INTERVAL_MS = 150; // สลับช่องทุก 150ms (เร็วกว่า 1 คาบ Beacon 102ms เล็กน้อย)
 
 unsigned long lastHopTime = 0;
 int currentChannelIndex = 0;
@@ -114,10 +114,13 @@ void IRAM_ATTR wifiOmniCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
         return; // ตัด Downlink จาก Access Point ออก เพื่อลดสัญญาณรบกวนจากเราเตอร์รอบข้าง
     }
 
-    // ถ้าเป็น Beacon ที่เป็น Real MAC ทั่วไปและไม่ใช่สุ่ม อาจเป็นเราเตอร์บ้าน ยกเว้นคนเปิด Hotspot
-    // เพื่อไม่ให้จอรก เราจะเน้น Probe Req, Action P2P, QoS Null, และเฟรมที่ส่งจาก Client (ToDS=1)
-    if (fType == 0 && fSubtype == 8 && !isRandomMac(header->addr2)) {
-        return; // ตัดเราเตอร์บ้านทั่วไปออก
+    // ตรวจจับ Beacon (Subtype 8):
+    // ถ้าเป็นโทรศัพท์ที่เปิด Hotspot ใกล้ตัวเรา (RSSI >= -65 dBm) หรือเป็น MAC สุ่ม ให้รับเข้ามาวิเคราะห์ทันที
+    // แต่ถ้าเป็นเราเตอร์บ้านที่อยู่ไกล (RSSI < -65 dBm) ให้ตัดออกเพื่อไม่ให้รกหน้าจอ
+    if (fType == 0 && fSubtype == 8) {
+        if (!isRandomMac(header->addr2) && pkt->rx_ctrl.rssi < -65) {
+            return; // ตัดเราเตอร์บ้านที่อยู่ไกลออกไป
+        }
     }
 
     packetCount++;
@@ -237,7 +240,7 @@ void setup() {
     esp_wifi_set_promiscuous(true);
 
     esp_wifi_set_channel(CHANNELS[currentChannelIndex], WIFI_SECOND_CHAN_NONE);
-    Serial.printf(">>> Omni Sniffer Started! สแกนช่อง 1, 6, 11 (Hop ทุก %lu ms)\n\n", HOP_INTERVAL_MS);
+    Serial.printf(">>> Omni Sniffer Started! สแกนกวาดครบ 11 ช่อง 2.4GHz (Hop ทุก %lu ms)\n\n", HOP_INTERVAL_MS);
 }
 
 void loop() {
