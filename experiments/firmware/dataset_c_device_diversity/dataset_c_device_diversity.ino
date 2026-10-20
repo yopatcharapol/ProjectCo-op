@@ -196,3 +196,4 @@ void loop() {
         esp_wifi_set_channel(CHANNELS[currentChannelIndex], WIFI_SECOND_CHAN_NONE);
     }
 }
+
