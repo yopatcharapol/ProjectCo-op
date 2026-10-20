@@ -22,6 +22,7 @@
 | **EXP-02** | **Passive Wi-Fi Sniffing & Doze/Motion**<br>ดักฟัง Probe Request ตอนปิดเน็ต + ทดสอบจอดับ vs เขย่าเครื่อง | [💻 โค้ด EXP-02](firmware/exp02_passive_sniffer/exp02_passive_sniffer.ino) | [📊 ข้อมูลดิบ EXP-02](raw_logs/2026-10-19_exp02_passive_sniffer_results.csv) | [📑 รายงาน EXP-02](reports/exp02_passive_sniffer_profiling.md) |
 | **DATASET-A** | **Systematic Outdoor Distance Profiling (1m – 50m)**<br>วัดระยะจริง 1m–50m ทะลุต้นไม้บังมิด (Foliage NLOS) + ที่ต่ำ + ช่องเปิด (540+ ตัวอย่าง) | [💻 โค้ด Sniffer Auto-Tag](firmware/dataset_a_distance_sniffer/dataset_a_distance_sniffer.ino) | [📊 ข้อมูลดิบชุด A (540+ แถว)](raw_logs/dataset_a_distance_test.csv) | [📑 รายงานฉบับสมบูรณ์ชุด A](reports/dataset_a_distance_profiling.md) |
 | **DATASET-B** | **Temporal & Motion Profiling (Doze vs Walking vs Pocket)**<br>ศึกษาพฤติกรรมแกนเวลา 4 สถานะ: ค้นพบคาบแม่บท 21.3s, Doze Mode ข้ามรอบ 42.7s, และเดินปลุก Wi-Fi ถี่ขึ้น 2 เท่า! | [💻 โค้ด Motion Sniffer](firmware/dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino) | [📊 ข้อมูลดิบชุด B (80 แถว)](raw_logs/dataset_b_motion_test.csv) | [📑 รายงานฉบับสมบูรณ์ชุด B](reports/dataset_b_motion_profiling.md) |
+| **DATASET-C** | **Multi-Device Diversity & Multi-Target Tracking**<br>ทดสอบความหลากหลายของสมาร์ตโฟน (iOS vs Android) และการตรวจจับพร้อมกันหลายเครื่อง | [💻 โค้ด Diversity Sniffer](firmware/dataset_c_device_diversity/dataset_c_device_diversity.ino) | [📊 ข้อมูลดิบชุด C](raw_logs/dataset_c_device_diversity.csv) | [📑 รายงานชุด C (กำลังทดสอบ)](reports/dataset_c_device_diversity.md) |
 
 ---
 
@@ -95,18 +96,21 @@ experiments/
 │   ├── exp01_wifi_scanner/exp01_wifi_scanner.ino
 │   ├── exp02_passive_sniffer/exp02_passive_sniffer.ino
 │   ├── dataset_a_distance_sniffer/dataset_a_distance_sniffer.ino
-│   └── dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino
+│   ├── dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino
+│   └── dataset_c_device_diversity/dataset_c_device_diversity.ino
 │
 ├── 📊 raw_logs/                               <-- บันทึกข้อมูลดิบจาก Serial Monitor (.csv)
 │   ├── 2026-10-19_exp01_wifi_nano_distance_test.csv
 │   ├── 2026-10-19_exp02_passive_sniffer_results.csv
 │   ├── dataset_a_distance_test.csv
-│   └── dataset_b_motion_test.csv
+│   ├── dataset_b_motion_test.csv
+│   └── dataset_c_device_diversity.csv
 │
 └── 📑 reports/                                <-- เอกสารรายงานผลการทดลองเชิงวิชาการฉบับเต็ม
     ├── exp01_wifi_nano_profiling.md
     ├── exp02_passive_sniffer_profiling.md
     ├── dataset_a_distance_profiling.md
-    └── dataset_b_motion_profiling.md
+    ├── dataset_b_motion_profiling.md
+    └── dataset_c_device_diversity.md
 ```
 
