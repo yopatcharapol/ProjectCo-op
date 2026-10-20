@@ -111,3 +111,4 @@ timestamp_ms,pkt_id,rssi_dbm,delta_t_ms,mac,mac_type,company,name,service,tag
 226657,148,-64,350,66:CE:4C:85:44:D7,RANDOM,0x038F(Xiaomi),"Unknown","None",BLE_SCAN
 226710,149,-65,53,66:CE:4C:85:44:D7,RANDOM,0x038F(Xiaomi),"Unknown","None",BLE_SCAN
 226975,150,-65,265,66:CE:4C:85:44:D7,RANDOM,0x038F(Xiaomi),"Unknown","None",BLE_SCAN
+
