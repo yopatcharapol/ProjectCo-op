@@ -115,6 +115,49 @@ $$\text{advDelay} \in [0, 10]\text{ ms} \quad (\text{Pseudo-random jitter เพ
 
 ---
 
+### 📱 3. กรณีศึกษาเจาะลึก: POCO X3 Pro กับ Mi Share (Xiaomi MTA Protocol Fingerprinting)
+
+การทดลองเปิด–ปิดระบบ **Mi Share บน POCO X3 Pro (HyperOS/MIUI)** ได้สร้างหลักฐานเชิงประจักษ์ชิ้นเอกที่ยืนยันประสิทธิภาพของเรดาร์:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 ผู้ใช้ POCO X3 Pro
+    participant Phone as 📱 ชิปเซ็ตบลูทูธมือถือ
+    participant Sniffer as 📡 ESP32-Nano BLE Sniffer
+
+    Note over User,Phone: 1. สถานะสแตนด์บาย / ปิด Mi Share
+    Phone--xSniffer: คลื่นวิทยุ = 0 (Heartbeat #1 - #38 เงียบสนิท)
+    
+    Note over User,Phone: 2. ผู้ใช้กดเปิด "Mi Share" (t = 209.8s)
+    User->>Phone: สลับสวิตช์ Mi Share เป็น ON
+    loop ระเบิดคลื่นพัลส์ความถี่สูง 17 วินาทีรวด (112 แพ็กเก็ต)
+        Phone->>Sniffer: BLE Adv (MAC: 66:CE..., Company: 0x038F Xiaomi) [100 แพ็กเก็ต]
+        Phone->>Sniffer: BLE Adv (MAC: 65:CE..., Service: 00003331 MTA Mi Share) [12 แพ็กเก็ต]
+    end
+
+    Note over User,Phone: 3. ผู้ใช้กดปิด "Mi Share" (t = 227.0s)
+    User->>Phone: สลับสวิตช์ Mi Share เป็น OFF
+    Phone--xSniffer: ตัดสัญญาณทันที! แพ็กเก็ตแช่แข็งที่ 150 (Heartbeat #75 - #83 เงียบสนิท)
+```
+
+#### ข้อมูลสถิติเชิงลึกจากการทดสอบ Mi Share:
+1. **การทะลวงผ่าน Privacy MAC ด้วย Manufacturer Identifier:**
+   * แม้ POCO จะสุ่ม MAC Address เป็น `66:CE:4C:85:44:D7` (RANDOM)
+   * แต่ในส่วนหัวเพย์โหลดของแพ็กเก็ตระบุรหัสประจำค่าย **`0x038F` (Xiaomi Inc.)** ชัดเจนถึง **100 แพ็กเก็ตเต็ม!**
+   * ทำให้เรดาร์ของเรารู้ได้ทันทีว่า **"นี่คือโทรศัพท์ค่าย Xiaomi/POCO แน่นอน"** โดยไม่ต้องเดา
+2. **การสกัดโปรโตคอลการแชร์ข้ามค่าย (MTA Alliance Service UUID):**
+   * ตรวจพบ Service UUID `00003331-0000-1000-8000-008123456789` จำนวน **12 แพ็กเก็ต** (สลับยิงในอัตราส่วน 1:8 ควบคู่กับ Manufacturer Payload)
+   * รหัสนี้คือมาตรฐานทางการของ **Peer-to-Peer Transmission Alliance (MTA)** ที่ใช้ใน Xiaomi, OPPO, Vivo, Realme
+3. **การทดสอบสวิตช์สองขั้ว (Binary Toggle Proof):**
+   * **ตอนเปิด Mi Share ($t = 209.8$s ถึง $226.9$s):** ยิงคลื่นออกมาหนาแน่น **6.55 แพ็กเก็ต/วินาที** ($\Delta t \approx 135$ ms)
+   * **ตอนปิด Mi Share ($t \ge 227.0$s):** คลื่นวิทยุ BLE ดับวูบทันที! ค่าตัวนับแพ็กเก็ตหยุดนิ่งสนิทที่ 150 แพ็กเก็ตยาวนานตลอด 9 รอบ Heartbeat (~27 วินาที)
+   * **บทสรุป:** เป็นการพิสูจน์ความสัมพันธ์เชิงสาเหตุ (Causal Proof 100%) ว่าการเปิดเมนูแชร์ไฟล์บนโทรศัพท์คือตัวปลุกคลื่นแม่เหล็กไฟฟ้ามหาศาลให้ออกสู่อากาศจริง!
+
+---
+
+---
+
 ## 5. การอัปเดตสถาปัตยกรรมสู่ "Omni-RF Tactical Dragon Radar"
 
 จากผลการทดลองทั้ง 4 ชุด (DATASET-A, B, C และ EXP-03) เราได้เห็นภาพของคลื่นแม่เหล็กไฟฟ้าทั้งหมดที่สมาร์ตโฟนปล่อยออกมา:
