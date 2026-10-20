@@ -24,6 +24,7 @@
 | **DATASET-B** | **Temporal & Motion Profiling (Doze vs Walking vs Pocket)**<br>ศึกษาพฤติกรรมแกนเวลา 4 สถานะ: ค้นพบคาบแม่บท 21.3s, Doze Mode ข้ามรอบ 42.7s, และเดินปลุก Wi-Fi ถี่ขึ้น 2 เท่า! | [💻 โค้ด Motion Sniffer](firmware/dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino) | [📊 ข้อมูลดิบชุด B (80 แถว)](raw_logs/dataset_b_motion_test.csv) | [📑 รายงานฉบับสมบูรณ์ชุด B](reports/dataset_b_motion_profiling.md) |
 | **DATASET-C** | **Multi-Device Diversity (MediaTek vs Qualcomm) & Multi-Target**<br>เปรียบเทียบ Honor X7b vs POCO X3 Pro: Qualcomm สุ่ม MAC ทุก 10s เร็วกว่า 2 เท่า และตรวจจับ 2 เครื่องพร้อมกันสำเร็จ 100% | [💻 โค้ด Diversity Sniffer](firmware/dataset_c_device_diversity/dataset_c_device_diversity.ino) | [📊 ข้อมูลดิบชุด C (103 แถว)](raw_logs/dataset_c_device_diversity.csv) | [📑 รายงานฉบับสมบูรณ์ชุด C](reports/dataset_c_device_diversity.md) |
 | **EXP-03** | **Bluetooth Low Energy (BLE) Multi-RF Emission**<br>ดักจับคลื่นบลูทูธ (2.4 GHz) ขณะโทรศัพท์เปิด Quick Share: ยิงถล่ม 484 แพ็กเก็ตใน 75 วินาที (Δt ≈ 100 ms) และถอดรหัสการหมุนเวียน Private MAC สำเร็จ | [💻 โค้ด BLE Sniffer](firmware/exp03_ble_sniffer/exp03_ble_sniffer.ino) | [📊 ข้อมูลดิบ EXP-03 (484 แถว)](raw_logs/exp03_ble_results.csv) | [📑 รายงานฉบับสมบูรณ์ EXP-03](reports/exp03_ble_profiling.md) |
+| **EXP-04** | **Omni-Frame Wi-Fi Sniffing (All 802.11 Emissions)**<br>ดักจับคลื่นทุกประเภทที่โทรศัพท์แผ่ออกมา: Probe Req, Wi-Fi Direct/Action P2P, QoS Null (Keep-Alive ตอนต่อเน็ต), Hotspot Beacons | [💻 โค้ด Omni Sniffer](firmware/exp04_omni_wifi_sniffer/exp04_omni_wifi_sniffer.ino) | [📊 ข้อมูลดิบ EXP-04](raw_logs/exp04_omni_wifi_results.csv) | [📑 รายงาน EXP-04 (พร้อมทดสอบ)](reports/exp04_omni_wifi_profiling.md) |
 
 ---
 
@@ -97,6 +98,7 @@ experiments/
 │   ├── exp01_wifi_scanner/exp01_wifi_scanner.ino
 │   ├── exp02_passive_sniffer/exp02_passive_sniffer.ino
 │   ├── exp03_ble_sniffer/exp03_ble_sniffer.ino
+│   ├── exp04_omni_wifi_sniffer/exp04_omni_wifi_sniffer.ino
 │   ├── dataset_a_distance_sniffer/dataset_a_distance_sniffer.ino
 │   ├── dataset_b_motion_sniffer/dataset_b_motion_sniffer.ino
 │   └── dataset_c_device_diversity/dataset_c_device_diversity.ino
@@ -107,12 +109,14 @@ experiments/
 │   ├── dataset_a_distance_test.csv
 │   ├── dataset_b_motion_test.csv
 │   ├── dataset_c_device_diversity.csv
-│   └── exp03_ble_results.csv
+│   ├── exp03_ble_results.csv
+│   └── exp04_omni_wifi_results.csv
 │
 └── 📑 reports/                                <-- เอกสารรายงานผลการทดลองเชิงวิชาการฉบับเต็ม
     ├── exp01_wifi_nano_profiling.md
     ├── exp02_passive_sniffer_profiling.md
     ├── exp03_ble_profiling.md
+    ├── exp04_omni_wifi_profiling.md
     ├── dataset_a_distance_profiling.md
     ├── dataset_b_motion_profiling.md
     └── dataset_c_device_diversity.md
