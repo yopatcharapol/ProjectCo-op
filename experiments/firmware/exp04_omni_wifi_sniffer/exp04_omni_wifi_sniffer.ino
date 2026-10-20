@@ -153,18 +153,26 @@ void IRAM_ATTR wifiOmniCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
         countOther++;
     }
 
-    // สกัด SSID (กรณี Probe Request หรือ Beacon)
+    // สกัด SSID (กรณี Probe Request, Beacon หรือ Probe Response)
     char ssid[33] = "";
     int ssidLen = 0;
-    if (fType == 0 && (fSubtype == 4 || fSubtype == 8)) {
+    if (fType == 0 && (fSubtype == 4 || fSubtype == 8 || fSubtype == 5)) {
         int offset = sizeof(wifi_ieee80211_mac_header_t);
+        // ถ้าเป็น Beacon (8) หรือ Probe Response (5) จะมี Fixed Parameters คั่นอยู่ 12 ไบต์
+        // (Timestamp 8B + Beacon Interval 2B + Capability Info 2B)
+        if (fSubtype == 8 || fSubtype == 5) {
+            offset += 12;
+        }
+
         if (offset + 2 <= len) {
             uint8_t tagId = payload[offset];
             uint8_t tagLen = payload[offset + 1];
-            if (tagId == 0 && tagLen > 0 && tagLen <= 32 && (offset + 2 + tagLen <= len)) {
-                memcpy(ssid, &payload[offset + 2], tagLen);
-                ssid[tagLen] = '\0';
-                ssidLen = tagLen;
+            if (tagId == 0 && tagLen <= 32 && (offset + 2 + tagLen <= len)) {
+                if (tagLen > 0) {
+                    memcpy(ssid, &payload[offset + 2], tagLen);
+                    ssid[tagLen] = '\0';
+                    ssidLen = tagLen;
+                }
             }
         }
     }
