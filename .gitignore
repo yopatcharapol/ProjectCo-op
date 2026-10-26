@@ -1,0 +1,9 @@
+# Private vault shared with friend (synced via NineSync / Relay)
+share_friend/
+.obsidian/
+
+# Build artifacts & virtual environments
+.venv/
+__pycache__/
+*.pyc
+*.tmp
