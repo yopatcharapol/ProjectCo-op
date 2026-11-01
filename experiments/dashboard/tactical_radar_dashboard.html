@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐉 Tactical Dragon Radar — Web Serial PPI Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0b0f14;
+            --panel-bg: #111823;
+            --radar-green: #00ff66;
+            --radar-dim-green: rgba(0, 255, 102, 0.18);
+            --ble-blue: #00d0ff;
+            --hotspot-orange: #ff9900;
+            --alert-red: #ff3344;
+            --text-color: #d8e2ec;
+            --text-muted: #627284;
+            --border-color: #1e2c3d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Header */
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-live {
+            background-color: rgba(0, 255, 102, 0.15);
+            color: var(--radar-green);
+            border: 1px solid var(--radar-green);
+        }
+
+        .badge-reconnecting {
+            background-color: rgba(255, 153, 0, 0.2);
+            color: var(--hotspot-orange);
+            border: 1px solid var(--hotspot-orange);
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #162436;
+            color: #fff;
+            border: 1px solid #2b415e;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #20354e;
+            border-color: var(--radar-green);
+            color: var(--radar-green);
+        }
+
+        button.btn-primary {
+            background-color: #007744;
+            border-color: var(--radar-green);
+            color: #fff;
+        }
+
+        button.btn-primary:hover {
+            background-color: #009955;
+            box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
+        }
+
+        button.btn-sim {
+            background-color: #24223d;
+            border-color: #6455bb;
+            color: #b7a9ff;
+        }
+
+        button.btn-sim:hover {
+            background-color: #363259;
+            color: #fff;
+        }
+
+        /* Top-Right Overlay Bars (Filter + Zoom) */
+        .radar-top-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            background: rgba(11, 15, 20, 0.9);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .group-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-right: 4px;
+            font-weight: 600;
+        }
+
+        .pill-btn {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 5px;
+            background: #131d2b;
+            border: 1px solid #263850;
+            color: var(--text-muted);
+        }
+
+        .pill-btn.active {
+            background: rgba(0, 255, 102, 0.2);
+            border-color: var(--radar-green);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+        }
+
+        .pill-btn.zoom-active {
+            background: rgba(0, 208, 255, 0.22);
+            border-color: var(--ble-blue);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(0, 208, 255, 0.25);
+        }
+
+        /* Main Container */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 16px;
+            padding: 16px;
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Radar Viewport Panel */
+        .radar-panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        canvas#radarCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 50%;
+            background-color: #05080c;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 255, 102, 0.08);
+        }
+
+        .radar-overlay-stats {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            background: rgba(11, 15, 20, 0.88);
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .radar-legend {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(11, 15, 20, 0.88);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Sidebar Intel Panel */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .intel-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card-header {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        /* Target Table */
+        .target-list {
+            overflow-y: auto;
+            flex: 1;
+            max-height: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .target-row {
+            background: #0d141e;
+            border: 1px solid #1a2738;
+            border-radius: 6px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: border-color 0.2s;
+        }
+
+        .target-row:hover {
+            border-color: var(--radar-green);
+        }
+
+        .target-header-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .target-id {
+            font-weight: bold;
+            color: var(--radar-green);
+            font-size: 0.95rem;
+        }
+
+        .target-distance {
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: #fff;
+        }
+
+        .target-details {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .target-details span b {
+            color: var(--text-color);
+        }
+
+        /* Console Stream Box */
+        .terminal-box {
+            background-color: #05080c;
+            border: 1px solid #1a2738;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.74rem;
+            color: #38bdf8;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <span style="font-size: 1.5rem;">🐉</span>
+            <div>
+                <h1>TACTICAL DRAGON RADAR</h1>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                    Dual-Radio Smartphone RF Sensing & De-randomization Scope (Auto-Reconnect + Room Zoom)
+                </div>
+            </div>
+            <span class="badge badge-live" id="connStatus">HARDWARE: DISCONNECTED</span>
+        </div>
+        <div class="controls">
+            <button class="btn-primary" id="btnConnect" onclick="toggleSerialConnection()">
+                🔌 Connect ESP32 (Web Serial)
+            </button>
+            <button class="btn-sim" id="btnSim" onclick="toggleSimulation()">
+                ▶️ Demo Replay (Empirical)
+            </button>
+            <input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" onchange="handleCsvUpload(event)">
+            <button onclick="document.getElementById('csvFileInput').click()">
+                📂 Load CSV Log
+            </button>
+            <button onclick="clearAllTargets()">
+                🧹 Clear
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Radar Viewport Canvas -->
+        <div class="radar-panel">
+            <!-- แผงควบคุมการซูมระยะ + กรองชนิดคลื่น -->
+            <div class="radar-top-controls">
+                <!-- แถวที่ 1: โหมดซูมระยะเรดาร์ (Zoom Scale) -->
+                <div class="control-group">
+                    <span class="group-label">🔍 ระยะซูม:</span>
+                    <button class="pill-btn zoom-active" id="zoom-5" onclick="setRadarZoom(5)">🏠 ห้อง 3x4m (5m)</button>
+                    <button class="pill-btn" id="zoom-10" onclick="setRadarZoom(10)">🏡 หน้าหอ (10m)</button>
+                    <button class="pill-btn" id="zoom-25" onclick="setRadarZoom(25)">🌲 สนาม (25m)</button>
+                    <button class="pill-btn" id="zoom-50" onclick="setRadarZoom(50)">🛰️ ไกลสุด (50m)</button>
+                </div>
+                <!-- แถวที่ 2: โหมดกรองคลื่น (Radio Filter) -->
+                <div class="control-group">
+                    <span class="group-label">📡 คลื่น:</span>
+                    <button class="pill-btn active" id="flt-ALL" onclick="setRadarFilter('ALL')">🌐 ทั้งหมด</button>
+                    <button class="pill-btn" id="flt-WIFI" onclick="setRadarFilter('WIFI')">🟢 เฉพาะ Wi-Fi</button>
+                    <button class="pill-btn" id="flt-BLE" onclick="setRadarFilter('BLE')">🔵 เฉพาะ BLE</button>
+                </div>
+            </div>
+
+            <canvas id="radarCanvas" width="680" height="680"></canvas>
+
+            <div class="radar-overlay-stats">
+                <div>📡 RF Band: <b>2.4 GHz ISM</b> (Wi-Fi + BLE)</div>
+                <div>🔍 Zoom Scale: <b id="zoomLabelText" style="color: var(--ble-blue);">0 – 5 เมตร (โหมดห้อง 3x4m)</b></div>
+                <div>🛰️ Active in Range: <b id="activeTargetCount" style="color: var(--radar-green);">0</b></div>
+                <div>⚡ Total Packets: <b id="statPktCount">0</b></div>
+            </div>
+
+            <div class="radar-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: var(--radar-green);"></div>
+                    <span>Wi-Fi (Probe / QoS Null)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: var(--ble-blue);"></div>
+                    <span>BLE (MTA / Honor / Quick Share)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: var(--hotspot-orange);"></div>
+                    <span>Hotspot / Wi-Fi Aware</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Intel & Log Stream -->
+        <div class="sidebar">
+            <div class="intel-card">
+                <div class="card-header">
+                    <span>🎯 เป้าหมายในระยะซูม (เรียงจากใกล้สุด)</span>
+                    <span id="rangeFilterBadge" style="font-size: 0.75rem; color: var(--ble-blue);">≤ 5.0m</span>
+                </div>
+                <div class="target-list" id="targetListContainer">
+                    <div style="text-align: center; color: var(--text-muted); padding: 40px 0; font-size: 0.85rem;">
+                        กำลังรอสัญญาณคลื่นแม่เหล็กไฟฟ้า...<br>
+                        (มีระบบ Auto-Reconnect เชื่อมต่อพอร์ต COM5 ให้อัตโนมัติหากบอร์ดรีเซ็ต!)
+                    </div>
+                </div>
+            </div>
+
+            <div class="intel-card" style="flex: 0 0 190px;">
+                <div class="card-header">
+                    <span>📟 SERIAL DATA STREAM (LATEST 45 PKTS)</span>
+                    <span id="serialBps" style="font-size: 0.75rem; color: var(--radar-green);">115200 BAUD</span>
+                </div>
+                <div class="terminal-box" id="terminalLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ======================================================================================
+        // 1. Radar Engine (HTML5 Canvas PPI Scope - Adjustable Room Zoom 5m / 10m / 25m / 50m)
+        // ======================================================================================
+        const canvas = document.getElementById('radarCanvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const maxRadius = canvas.width / 2 - 28;
+
+        const ZOOM_CONFIGS = {
+            5: {
+                maxDist: 5,
+                label: '0 – 5 เมตร (โหมดห้อง 3x4m)',
+                linear: true,
+                rings: [
+                    { dist: 1, label: '1m (หน้าบอร์ด)' },
+                    { dist: 2, label: '2m (ในห้อง)' },
+                    { dist: 3, label: '3m (ขอบห้อง)' },
+                    { dist: 4, label: '4m (มุมห้อง/ทางเดิน)' },
+                    { dist: 5, label: '5m (นอกห้อง)' }
+                ]
+            },
+            10: {
+                maxDist: 10,
+                label: '0 – 10 เมตร (โหมดห้อง + ถนนหน้าหอ)',
+                linear: true,
+                rings: [
+                    { dist: 1, label: '1m' },
+                    { dist: 2, label: '2m (ในห้อง)' },
+                    { dist: 3, label: '3m (หน้าต่าง)' },
+                    { dist: 5, label: '5m (ถนนหน้าหอ)' },
+                    { dist: 7.5, label: '7.5m' },
+                    { dist: 10, label: '10m' }
+                ]
+            },
+            25: {
+                maxDist: 25,
+                label: '0 – 25 เมตร (โหมดสนามกลางแจ้ง)',
+                linear: false,
+                rings: [
+                    { dist: 1, label: '1m' },
+                    { dist: 3, label: '3m' },
+                    { dist: 5, label: '5m' },
+                    { dist: 10, label: '10m' },
+                    { dist: 15, label: '15m' },
+                    { dist: 25, label: '25m' }
+                ]
+            },
+            50: {
+                maxDist: 50,
+                label: '0 – 50 เมตร (โหมดกวาดระยะไกลสุด)',
+                linear: false,
+                rings: [
+                    { dist: 1, label: '1m' },
+                    { dist: 5, label: '5m' },
+                    { dist: 10, label: '10m' },
+                    { dist: 25, label: '25m' },
+                    { dist: 50, label: '50m' }
+                ]
+            }
+        };
+
+        let currentZoom = 5;
+        let sweepAngle = 0;
+        let targets = {};
+        let totalPackets = 0;
+        let currentFilter = 'ALL';
+        let uiDirty = false;
+
+        function setRadarZoom(zoomMeters) {
+            currentZoom = zoomMeters;
+            [5, 10, 25, 50].forEach(z => {
+                const btn = document.getElementById('zoom-' + z);
+                if (btn) btn.className = (z === zoomMeters) ? 'pill-btn zoom-active' : 'pill-btn';
+            });
+            const cfg = ZOOM_CONFIGS[currentZoom];
+            document.getElementById('zoomLabelText').textContent = cfg.label;
+            document.getElementById('rangeFilterBadge').textContent = `≤ ${cfg.maxDist}.0m`;
+            uiDirty = true;
+        }
+
+        function setRadarFilter(mode) {
+            currentFilter = mode;
+            ['ALL', 'WIFI', 'BLE'].forEach(m => {
+                const btn = document.getElementById('flt-' + m);
+                if (btn) btn.className = (m === mode) ? 'pill-btn active' : 'pill-btn';
+            });
+            uiDirty = true;
+        }
+
+        function passesFilter(tgt) {
+            const cfg = ZOOM_CONFIGS[currentZoom];
+            if (tgt.estDistance > cfg.maxDist * 1.08) return false;
+            if (currentFilter === 'WIFI') return tgt.radioType === 'WIFI';
+            if (currentFilter === 'BLE') return tgt.radioType === 'BLE';
+            return true;
+        }
+
+        function distanceToRadius(distMeters) {
+            const cfg = ZOOM_CONFIGS[currentZoom];
+            const clamped = Math.max(0.2, Math.min(distMeters, cfg.maxDist));
+            if (cfg.linear) {
+                return (clamped / cfg.maxDist) * maxRadius;
+            } else {
+                return (Math.sqrt(clamped) / Math.sqrt(cfg.maxDist)) * maxRadius;
+            }
+        }
+
+        function drawRadar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cfg = ZOOM_CONFIGS[currentZoom];
+
+            ctx.lineWidth = 1.2;
+            ctx.font = 'bold 11px Consolas, monospace';
+
+            cfg.rings.forEach(ring => {
+                const r = distanceToRadius(ring.dist);
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                if (currentZoom <= 10 && (ring.dist === 3 || ring.dist === 4)) {
+                    ctx.strokeStyle = 'rgba(0, 208, 255, 0.35)';
+                    ctx.fillStyle = 'rgba(0, 208, 255, 0.85)';
+                } else {
+                    ctx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
+                    ctx.fillStyle = 'rgba(0, 255, 102, 0.7)';
+                }
+                ctx.stroke();
+                ctx.fillText(ring.label, centerX + 6, centerY - r + 13);
+            });
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - maxRadius);
+            ctx.lineTo(centerX, centerY + maxRadius);
+            ctx.moveTo(centerX - maxRadius, centerY);
+            ctx.lineTo(centerX + maxRadius, centerY);
+            ctx.strokeStyle = 'rgba(0, 255, 102, 0.15)';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            sweepAngle = (sweepAngle + 0.025) % (Math.PI * 2);
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, maxRadius, sweepAngle - 0.2, sweepAngle);
+            ctx.closePath();
+            const sweepGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius);
+            sweepGrad.addColorStop(0, 'rgba(0, 255, 102, 0)');
+            sweepGrad.addColorStop(1, 'rgba(0, 255, 102, 0.22)');
+            ctx.fillStyle = sweepGrad;
+            ctx.fill();
+
+            const now = Date.now();
+            Object.values(targets).forEach(tgt => {
+                const ageMs = now - tgt.lastSeenTimestamp;
+                if (ageMs > 30000) return;
+                if (!passesFilter(tgt)) return;
+
+                if (typeof tgt.displayDist !== 'number') tgt.displayDist = tgt.estDistance;
+                tgt.displayDist += (tgt.estDistance - tgt.displayDist) * 0.2;
+
+                const r = distanceToRadius(tgt.displayDist);
+                const x = centerX + r * Math.cos(tgt.angleRad);
+                const y = centerY + r * Math.sin(tgt.angleRad);
+
+                let blipColor = '#00ff66';
+                if (tgt.radioType === 'BLE' || tgt.category.includes('BLE')) blipColor = '#00d0ff';
+                if (tgt.category.includes('HOTSPOT') || tgt.category.includes('NAN')) blipColor = '#ff9900';
+
+                if (ageMs < 1400) {
+                    const pulseRadius = 8 + (ageMs / 1400) * 20;
+                    const pulseAlpha = 1.0 - (ageMs / 1400);
+                    ctx.beginPath();
+                    ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = blipColor;
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = pulseAlpha;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1.0;
+                }
+
+                const dotSize = (currentZoom <= 10) ? 7 : 5;
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = blipColor;
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#05080c';
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Segoe UI, sans-serif';
+                ctx.fillText(`${tgt.targetId} (${tgt.estDistance.toFixed(2)}m)`, x + 10, y + 4);
+                ctx.fillStyle = 'rgba(216, 226, 236, 0.8)';
+                ctx.font = '10px Segoe UI, sans-serif';
+                ctx.fillText(tgt.extra ? `${tgt.brand} [${tgt.extra}]` : `${tgt.brand} (${tgt.rawRssi}dBm)`, x + 10, y + 17);
+            });
+
+            requestAnimationFrame(drawRadar);
+        }
+
+        requestAnimationFrame(drawRadar);
+
+        // ======================================================================================
+        // 2. High-Performance Ring-Buffer Logger & Throttled DOM Updater
+        // ======================================================================================
+        const MAX_LOG_LINES = 45;
+        let logBuffer = [];
+        let logDirty = false;
+
+        function appendLog(text) {
+            logBuffer.push(text);
+            if (logBuffer.length > MAX_LOG_LINES) {
+                logBuffer.shift();
+            }
+            logDirty = true;
+        }
+
+        setInterval(() => {
+            if (logDirty) {
+                const term = document.getElementById('terminalLog');
+                term.textContent = logBuffer.join('\n');
+                term.scrollTop = term.scrollHeight;
+                logDirty = false;
+            }
+            if (uiDirty) {
+                document.getElementById('statPktCount').textContent = totalPackets;
+                updateTargetTable();
+                uiDirty = false;
+            }
+        }, 200);
+
+        // ======================================================================================
+        // 3. Data Ingestion & Deduplicated Target Table Logic
+        // ======================================================================================
+
+        let nextGoldenAngleIndex = 0;
+
+        function processFusionRow(row) {
+            const parts = row.split(',');
+            if (parts.length < 13) return;
+
+            const targetId = parts[2];
+            const radioType = parts[3];
+            const rawRssi = parseInt(parts[5]);
+            const smoothRssi = parseFloat(parts[6]);
+            const estDist = parseFloat(parts[7]);
+            const seqNum = parseInt(parts[9]);
+            const mac = parts[10];
+            const macType = parts[11];
+            const category = parts[12];
+            const brand = (parts[13] || 'Unknown').replace(/"/g, '');
+            const extra = (parts[14] || '').replace(/"/g, '');
+
+            totalPackets++;
+
+            Object.keys(targets).forEach(existingId => {
+                if (existingId !== targetId && targets[existingId].mac === mac) {
+                    delete targets[existingId];
+                }
+            });
+
+            if (!targets[targetId]) {
+                nextGoldenAngleIndex++;
+                const angleDeg = (nextGoldenAngleIndex * 137.508) % 360;
+                targets[targetId] = {
+                    targetId: targetId,
+                    angleRad: angleDeg * (Math.PI / 180),
+                    displayDist: estDist
+                };
+            }
+
+            targets[targetId].radioType = radioType;
+            targets[targetId].rawRssi = rawRssi;
+            targets[targetId].smoothRssi = smoothRssi;
+            targets[targetId].estDistance = estDist;
+            targets[targetId].seqNum = seqNum;
+            targets[targetId].mac = mac;
+            targets[targetId].macType = macType;
+            targets[targetId].category = category;
+            targets[targetId].brand = brand;
+            targets[targetId].extra = extra;
+            targets[targetId].lastSeenTimestamp = Date.now();
+
+            uiDirty = true;
+        }
+
+        function processLegacyRow(line) {
+            if (line.startsWith('CSV_FUSION')) {
+                processFusionRow(line);
+            } else if (line.startsWith('CSV,')) {
+                const p = line.split(',');
+                if (p.length >= 11) {
+                    const rssi = parseInt(p[4]);
+                    const dist = Math.pow(10, (-38.2 - rssi) / 24.5);
+                    const pseudoTarget = `TGT-${(p[7].slice(-2) || '01').toUpperCase()}`;
+                    const synthLine = `CSV_FUSION,${p[1]},${pseudoTarget},WIFI,${p[3]},${rssi},${rssi},${dist.toFixed(2)},${p[5]},${p[6]},${p[7]},${p[8]},${p[9]},"Honor","${p[11] || ''}"`;
+                    processFusionRow(synthLine);
+                }
+            } else if (line.startsWith('CSV_BLE')) {
+                const p = line.split(',');
+                if (p.length >= 8) {
+                    const rssi = parseInt(p[3]);
+                    const dist = Math.pow(10, (-51.0 - rssi) / 24.5);
+                    const pseudoTarget = `TGT-BLE`;
+                    const synthLine = `CSV_FUSION,${p[1]},${pseudoTarget},BLE,37,${rssi},${rssi},${dist.toFixed(2)},${p[4]},0,${p[5]},${p[6]},BLE_ADV,"Xiaomi","${p[7] || ''}"`;
+                    processFusionRow(synthLine);
+                }
+            }
+        }
+
+        function updateTargetTable() {
+            const container = document.getElementById('targetListContainer');
+            const now = Date.now();
+            const targetList = Object.values(targets)
+                .filter(t => (now - t.lastSeenTimestamp) <= 30000 && passesFilter(t))
+                .sort((a, b) => a.estDistance - b.estDistance);
+
+            document.getElementById('activeTargetCount').textContent = targetList.length;
+
+            if (targetList.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px 0;">ไม่มีเป้าหมายในระยะซูม ${currentZoom} เมตร<br>(ลองกดปุ่มซูม 10m หรือ 25m เพื่อดูตัวที่อยู่ไกลออกไป)</div>`;
+                return;
+            }
+
+            container.innerHTML = targetList.map(t => {
+                const secAgo = Math.round((now - t.lastSeenTimestamp) / 1000);
+                return `
+                    <div class="target-row">
+                        <div class="target-header-line">
+                            <span class="target-id">${t.targetId} <span style="font-size: 0.75rem; color: #fff;">[${t.radioType}]</span></span>
+                            <span class="target-distance">${t.estDistance.toFixed(2)} m</span>
+                        </div>
+                        <div class="target-details">
+                            <span>อุปกรณ์: <b>${t.brand}</b></span>
+                            <span>หมวด: <b>${t.category}</b></span>
+                            <span>RSSI: <b>${t.rawRssi} dBm</b></span>
+                            <span>Seq No: <b>${t.seqNum}</b></span>
+                            <span>MAC: <b>${t.mac}</b></span>
+                            <span>พบเมื่อ: <b>${secAgo}s ก่อน</b></span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearAllTargets() {
+            targets = {};
+            totalPackets = 0;
+            logBuffer = [];
+            document.getElementById('statPktCount').textContent = '0';
+            document.getElementById('terminalLog').textContent = '';
+            updateTargetTable();
+        }
+
+        // ======================================================================================
+        // 4. Web Serial API Integration + Auto-Watchdog Reconnect (ต่อใหม่อัตโนมัติเมื่อบอร์ดรีเซ็ต!)
+        // ======================================================================================
+        let port = null;
+        let reader = null;
+        let readableStreamClosed = null;
+        let isConnected = false;
+        let userWantsConnected = false;
+        let reconnectTimer = null;
+
+        async function safeClosePort() {
+            try {
+                if (reader) {
+                    await reader.cancel().catch(() => {});
+                    reader = null;
+                }
+                if (readableStreamClosed) {
+                    await readableStreamClosed.catch(() => {});
+                    readableStreamClosed = null;
+                }
+                if (port) {
+                    await port.close().catch(() => {});
+                }
+            } catch (e) {}
+            isConnected = false;
+        }
+
+        async function toggleSerialConnection() {
+            if (userWantsConnected) {
+                // ผู้ใช้กดปุ่มสั่งตัดการเชื่อมต่อเอง
+                userWantsConnected = false;
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                await safeClosePort();
+                document.getElementById('btnConnect').innerText = '🔌 Connect ESP32 (Web Serial)';
+                document.getElementById('connStatus').innerText = 'HARDWARE: DISCONNECTED';
+                document.getElementById('connStatus').className = 'badge';
+                appendLog('🔌 [SYSTEM] ตัดการเชื่อมต่อพอร์ต Serial เรียบร้อยแล้ว');
+                return;
+            }
+
+            if (!('serial' in navigator)) {
+                alert('เบราว์เซอร์นี้ยังไม่รองรับ Web Serial API แนะนำให้ใช้ Google Chrome, Brave หรือ Microsoft Edge ครับ!');
+                return;
+            }
+
+            try {
+                port = await navigator.serial.requestPort();
+                userWantsConnected = true;
+                await openAndStreamPort(port);
+            } catch (err) {
+                console.error(err);
+                appendLog(`❌ [ERROR] การเชื่อมต่อล้มเหลว: ${err.message}`);
+            }
+        }
+
+        async function openAndStreamPort(targetPort) {
+            if (!userWantsConnected) return;
+
+            try {
+                await safeClosePort();
+                port = targetPort;
+                await port.open({ baudRate: 115200, bufferSize: 16384 });
+
+                try {
+                    await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+                } catch (sigErr) {}
+
+                isConnected = true;
+                document.getElementById('btnConnect').innerText = '❌ Disconnect Radar';
+                document.getElementById('connStatus').innerText = 'HARDWARE: CONNECTED (AUTO-RECOVERY ON)';
+                document.getElementById('connStatus').className = 'badge badge-live';
+
+                appendLog('✅ [SYSTEM] เชื่อมต่อพอร์ต Serial สำเร็จ! กำลังรับข้อมูลเรดาร์สด...');
+
+                const textDecoder = new TextDecoderStream();
+                readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+                reader = textDecoder.readable.getReader();
+
+                let lineBuffer = '';
+                while (userWantsConnected) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    lineBuffer += value;
+                    const lines = lineBuffer.split('\n');
+                    lineBuffer = lines.pop();
+
+                    for (let i = 0; i < lines.length; i++) {
+                        const trimmed = lines[i].trim();
+                        if (trimmed.length > 0) {
+                            appendLog(trimmed);
+                            processLegacyRow(trimmed);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Serial stream interrupted:', err);
+            }
+
+            // หากหลุดโดยที่ผู้ใช้ไม่ได้กดปุ่ม Disconnect เอง -> สั่ง Auto-Reconnect ทันที!
+            if (userWantsConnected) {
+                await safeClosePort();
+                document.getElementById('connStatus').innerText = 'RECONNECTING TO ESP32...';
+                document.getElementById('connStatus').className = 'badge badge-reconnecting';
+                appendLog('🔄 [AUTO-RECONNECT] สัญญาณ USB สะดุด/บอร์ดรีเซ็ต กำลังเชื่อมต่อใหม่อัตโนมัติใน 1.2 วินาที...');
+                scheduleAutoReconnect();
+            }
+        }
+
+        function scheduleAutoReconnect() {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(async () => {
+                if (!userWantsConnected) return;
+                try {
+                    const availablePorts = await navigator.serial.getPorts();
+                    if (availablePorts && availablePorts.length > 0) {
+                        await openAndStreamPort(availablePorts[0]);
+                    } else if (port) {
+                        await openAndStreamPort(port);
+                    } else {
+                        scheduleAutoReconnect();
+                    }
+                } catch (e) {
+                    scheduleAutoReconnect();
+                }
+            }, 1200);
+        }
+
+        // ดักจับอีเวนต์เมื่อบอร์ดเสียบ USB กลับเข้ามาใหม่ (Web Serial connect event)
+        if ('serial' in navigator) {
+            navigator.serial.addEventListener('connect', (event) => {
+                if (userWantsConnected && !isConnected) {
+                    appendLog('⚡ [USB EVENT] ตรวจพบบอร์ด ESP32 กลับมาออนไลน์! กำลังเชื่อมต่ออัตโนมัติ...');
+                    openAndStreamPort(event.target);
+                }
+            });
+        }
+
+        // ======================================================================================
+        // 5. Empirical Demo Simulation Engine
+        // ======================================================================================
+        let simInterval = null;
+
+        function toggleSimulation() {
+            const btn = document.getElementById('btnSim');
+            if (simInterval) {
+                clearInterval(simInterval);
+                simInterval = null;
+                btn.innerText = '▶️ Demo Replay (Empirical)';
+                appendLog('⏹️ [SIM] ปิดโหมดจำลอง');
+                return;
+            }
+
+            btn.innerText = '⏸️ Stop Demo';
+            appendLog('🚀 [SIM] เริ่มต้นจำลองการเดินในห้อง 3x4m (1.2m -> 3.8m -> 1.2m)...');
+
+            let step = 0;
+            simInterval = setInterval(() => {
+                step++;
+                const now = Date.now();
+
+                const phase = (step % 20);
+                const dist1 = phase <= 10 ? (1.2 + phase * 0.26) : (3.8 - (phase - 10) * 0.26);
+                const rssi1 = Math.round(-38.2 - 24.5 * Math.log10(dist1));
+                const seq1 = (2426 + step) % 4096;
+                const line1 = `CSV_FUSION,${now},TGT-01,WIFI,11,${rssi1},${rssi1.toFixed(1)},${dist1.toFixed(2)},350,${seq1},8E:4E:56:6E:F0:73,RANDOM,QOS_NULL,"Honor(Wi-Fi)","Wildcard"`;
+                processFusionRow(line1);
+                appendLog(line1);
+
+                const bleRssi = Math.round(-51.0 - 24.5 * Math.log10(dist1));
+                const line2 = `CSV_FUSION,${now + 14},TGT-02,BLE,37,${bleRssi},${bleRssi.toFixed(1)},${dist1.toFixed(2)},14,${step},4D:2D:B2:86:0E:25,RANDOM,BLE_MTA_ALLIANCE,"Honor/MTA(Dual-BLE)","Honor_Share"`;
+                processFusionRow(line2);
+                appendLog(line2);
+            }, 700);
+        }
+
+        function handleCsvUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                appendLog(`📂 [FILE] โหลดไฟล์ CSV สำเร็จ: ${file.name} (${lines.length} บรรทัด)`);
+                clearAllTargets();
+
+                let delay = 0;
+                lines.forEach(l => {
+                    const tr = l.trim();
+                    if (tr.startsWith('CSV')) {
+                        setTimeout(() => {
+                            appendLog(tr);
+                            processLegacyRow(tr);
+                        }, delay);
+                        delay += 35;
+                    }
+                });
+            };
+            fileReader.readAsText(file);
+        }
+    </script>
+</body>
+</html>

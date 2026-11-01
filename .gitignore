@@ -2,8 +2,7 @@
 share_friend/
 .obsidian/
 
-# Build artifacts & virtual environments
-.venv/
+# Python cache & temp
 __pycache__/
 *.pyc
 *.tmp

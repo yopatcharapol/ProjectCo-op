@@ -112,3 +112,4 @@ timestamp_ms,pkt_id,channel,rssi_dbm,delta_t_ms,seq_num,mac,mac_type,category,su
 38757,111,11,-54,483,2049,C0:06:C3:5D:F9:BC,REAL,HOTSPOT_AP,BEACON,DIRECT,"Wildcard"
 39912,112,10,-60,1155,357,D6:BE:63:B8:8C:13,RANDOM,HOTSPOT_AP,BEACON,DIRECT,"Wildcard"
 40015,113,10,-61,103,358,D6:BE:63:B8:8C:13,RANDOM,HOTSPOT_AP,BEACON,DIRECT,"Wildcard"
+

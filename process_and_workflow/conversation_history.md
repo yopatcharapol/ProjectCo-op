@@ -609,4 +609,53 @@
 ### 4. แผนงานขั้นต่อไป (Next Action Items)
 * [ ] ดำเนินการสรุปเนื้อหาหัวข้อ `02 — Probe Request` ในโฟลเดอร์ `share_friend/`
 
+---
+
+## 📅 [2026-10-29 15:10] - ดำเนินงานเฟสพัฒนา EXP-05, EXP-06, EXP-07 และวิเคราะห์ระบบ Phone-to-Phone (Doc 11)
+
+### 1. สรุปประเด็นการสนทนาและการตัดสินใจ
+1. **ทบทวนและขยายความคัมภีร์วิศวกรรม RF Sensing (Doc 10):**
+   * บันทึกคำจำกัดความของ **CSV (Comma-Separated Values)**: เหตุผลการเลือกใช้บน ESP32 (Zero RAM Overhead, สตรีมสด, วิเคราะห์ผ่าน Pandas ได้ทันที) และการใช้ `CSV,` เป็น Packet Tag
+   * แยกแยะ **IEEE 802.11 Frame Categories** 3 กลุ่มหลัก (Management `00`, Control `01`, Data `10`) และเทียบกับหมวดหมู่ตรวจจับของเรดาร์ (`PROBE_REQ`, `HOTSPOT_AP`, `QOS_NULL`)
+   * เจาะลึกคู่ตรงข้ามระหว่าง **Wildcard SSID** (Null Probe `""` เพื่อรักษาความเป็นส่วนตัว) กับ **Directed SSID** (Specific Probe เจาะจงชื่อเครือข่าย รั่วไหลประวัติ PNL)
+   * เพิ่มเติมการวิเคราะห์ **Wi-Fi Aware (NAN - Neighbor Awareness Networking)** ตามมาตรฐาน IEEE 802.11aq บน Channel 6 (2,437 MHz)
+2. **วางแผนและอนุมัติ Implementation Plan 3 ขั้นตอนอย่างเป็นระบบ:**
+   * สเต็ป 1: พัฒนาเฟิร์มแวร์รวมร่าง Wi-Fi + BLE TDM พร้อมสมองกลรวบ MAC สุ่ม (EXP-05)
+   * สเต็ป 2: สร้างหน้าจอเรดาร์แสดงผลสด Tactical PPI Web Serial Dashboard (EXP-06)
+   * สเต็ป 3: ทิศทางคลื่น (EXP-07) และเอกสารวิเคราะห์ความเป็นไปได้ในการค้นหาระหว่างสมาร์ตโฟนโดยตรง (Doc 11)
+3. **การส่งมอบผลงานและการพัฒนาจริง:**
+   * พัฒนาเฟิร์มแวร์ [`exp05_dual_radio_fusion.ino`](file:///d:/ProjectCo-op/experiments/firmware/exp05_dual_radio_fusion/exp05_dual_radio_fusion.ino) สลับคลื่น Wi-Fi (1,650 ms) และ BLE (850 ms) พร้อมฟังก์ชัน `isSequenceContinuous()` และสูตรคำนวณระยะทางในตัว
+   * พัฒนาหน้าจอเรดาร์ [`tactical_radar_dashboard.html`](file:///d:/ProjectCo-op/experiments/dashboard/tactical_radar_dashboard.html) รองรับ Web Serial บน PC และสมาร์ตโฟน Android ผ่านสาย USB-C OTG พร้อมโหมดจำลองข้อมูล (Demo Simulation) และเล่นซ้ำล็อกเก่า (CSV Replay)
+   * จัดทำเอกสารวิจัยฉบับที่ 11 [`docs/11_phone_to_phone_and_smart_dongle_feasibility.md`](file:///d:/ProjectCo-op/docs/11_phone_to_phone_and_smart_dongle_feasibility.md) วิเคราะห์ข้อจำกัดของระบบปฏิบัติการ (Kernel Sandbox & Scan Throttling 4 ครั้งต่อ 2 นาที) และสรุปทางออกสถาปัตยกรรม "Smartphone + USB-C Smart Dongle (FLIR One Model)"
+   * ซิงก์สำเนาทั้งหมดลงใน `share_friend/` และอัปเดตสารบัญใน [`share_friend/00_DASHBOARD.md`](file:///d:/ProjectCo-op/share_friend/00_DASHBOARD.md)
+
+### 2. ข้อตกลงและการตัดสินใจ (Decisions Made)
+* [x] **การเลือกสถาปัตยกรรม TDM (Time-Division Multiplexing):** สลับใช้วิทยุ 2.4 GHz โดยไม่ให้ชนกัน เพื่อความเสถียรสูงสุดของเฟิร์มแวร์ ESP32
+* [x] **การเลือกสถาปัตยกรรม Smart Dongle สำหรับผู้ใช้:** นำเสนอเป็นข้อสรุปหลักต่ออาจารย์ โดยชี้ให้เห็นว่าระบบ Smart Dongle พกพาสะดวกเหมือนกล้อง FLIR One และปลดล็อกขีดจำกัดของ OS ได้อย่างสมบูรณ์
+* [x] **การรักษาความปลอดภัย Git:** โฟลเดอร์ `share_friend/` ยังคงถูกรักษาให้อยู่ในสถานะ Untracked / Ignored อย่างเคร่งครัด
+
+### 3. ตารางเปรียบเทียบสถาปัตยกรรม (Architecture Decision Matrix)
+| สถาปัตยกรรม | ระยะตรวจจับ | การดักจับ Wi-Fi Probe | การดักจับ BLE MTA | ความง่ายในการใช้งาน | ความเหมาะสมในการทำโปรเจกต์ |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **1. Pure Native Smartphone (แอปล้วนไม่รูท)** | 15–25 m | ❌ ทำไม่ได้ (OS บล็อก) | ✅ ทำได้ดีมาก (Real-time) | ⭐⭐⭐⭐⭐ (พกแค่มือถือ) | เหมาะทำเป็นฟีเจอร์เสริมสำหรับตรวจจับ BLE และ Wi-Fi Aware |
+| **2. Rooted Smartphone (Nexmon Patch)** | 30–50 m | ✅ ทำได้สมบูรณ์ | ✅ ทำได้สมบูรณ์ | ⭐ (ยุ่งยาก เสี่ยงเครื่องพัง) | เหมาะสำหรับงานวิจัยความปลอดภัยเฉพาะกลุ่ม |
+| **3. Smartphone + USB-C Dongle (ESP32)** ⭐ | **30–50 m** | **✅ ทำได้สมบูรณ์ (EXP-05)** | **✅ ทำได้สมบูรณ์ (EXP-05)** | **⭐⭐⭐⭐ (เสียบ Type-C ตัวจิ๋ว)** | **ทางเลือกที่ดีที่สุด:** ตอบโจทย์อาจารย์ ได้คะแนนวิจัยสูงสุด และใช้งานได้จริง! |
+
+### 4. ผลกระทบต่อโครงสร้างงาน (Artifacts & Files Created / Updated)
+* สร้างเฟิร์มแวร์: [`experiments/firmware/exp05_dual_radio_fusion/exp05_dual_radio_fusion.ino`](file:///d:/ProjectCo-op/experiments/firmware/exp05_dual_radio_fusion/exp05_dual_radio_fusion.ino)
+* สร้างหน้าจอเรดาร์: [`experiments/dashboard/tactical_radar_dashboard.html`](file:///d:/ProjectCo-op/experiments/dashboard/tactical_radar_dashboard.html)
+* สร้างเอกสารวิจัยฉบับที่ 11: [`docs/11_phone_to_phone_and_smart_dongle_feasibility.md`](file:///d:/ProjectCo-op/docs/11_phone_to_phone_and_smart_dongle_feasibility.md)
+* อัปเดตคัมภีร์วิศวกรรมฉบับที่ 10: [`docs/10_rf_sensing_parameters_and_hidden_systems.md`](file:///d:/ProjectCo-op/docs/10_rf_sensing_parameters_and_hidden_systems.md)
+* ซิงก์สำเนาใน Vault ส่วนตัว:
+  * [`share_friend/Experiments/yo_experiments/Firmware/exp05_dual_radio_fusion/`](file:///d:/ProjectCo-op/share_friend/Experiments/yo_experiments/Firmware/exp05_dual_radio_fusion/)
+  * [`share_friend/Experiments/yo_experiments/Dashboard/tactical_radar_dashboard.html`](file:///d:/ProjectCo-op/share_friend/Experiments/yo_experiments/Dashboard/tactical_radar_dashboard.html)
+  * [`share_friend/Research/yo_research/11_Phone_to_Phone_and_Smart_Dongle_Feasibility.md`](file:///d:/ProjectCo-op/share_friend/Research/yo_research/11_Phone_to_Phone_and_Smart_Dongle_Feasibility.md)
+  * [`share_friend/Research/yo_research/10_RF_Parameters_and_Unconventional_Systems_Master_Guide.md`](file:///d:/ProjectCo-op/share_friend/Research/yo_research/10_RF_Parameters_and_Unconventional_Systems_Master_Guide.md)
+* อัปเดตศูนย์รวมข้อมูล: [`share_friend/00_DASHBOARD.md`](file:///d:/ProjectCo-op/share_friend/00_DASHBOARD.md)
+
+### 5. แผนงานขั้นต่อไป (Next Action Items)
+* [ ] นำเฟิร์มแวร์ EXP-05 ไปทดสอบ Flash ลงบอร์ด ESP32-S3 / Arduino Nano ESP32 จริง เพื่อทดสอบการรับส่งข้อมูลผ่านสาย USB-C OTG เข้ากับสมาร์ตโฟน
+* [ ] ทดสอบสร้างแผ่นสะท้อนคลื่น Corner Reflector สำหรับ EXP-07 เพื่อวัดอัตราขยายหน้า-หลัง (Front-to-Back Ratio) ภาคสนาม
+
+
 
