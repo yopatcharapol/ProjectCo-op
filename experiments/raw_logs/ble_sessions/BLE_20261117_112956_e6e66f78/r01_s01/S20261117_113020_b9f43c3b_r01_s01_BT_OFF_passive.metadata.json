@@ -1,0 +1,20 @@
+{
+    "schema_version":  1,
+    "session_id":  "S20261117_113020_b9f43c3b",
+    "trial_id":  "r01_s01",
+    "device_label":  "HONOR_X7B_5G",
+    "condition":  "BT_OFF",
+    "scan_mode":  "passive",
+    "requested_duration_seconds":  30,
+    "port":  "COM5",
+    "baud_rate":  115200,
+    "board":  "Arduino Nano ESP32",
+    "phone_os":  "UNKNOWN",
+    "core_version":  "2.0.18-arduino.5",
+    "started_utc":  "2026-11-17T04:30:20.9153355Z",
+    "ended_utc":  "2026-11-17T04:30:20.9490434Z",
+    "completed":  false,
+    "observed_reports":  0,
+    "last_dropped_reports":  0,
+    "notes":  "User-confirmed state: ปิด Bluetooth; ปิด Bluetooth ใน Settings ของมือถือ วางมือถือที่จุดเดิม"
+}

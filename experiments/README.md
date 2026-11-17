@@ -2,7 +2,13 @@
 
 อัปเดต: 17 พฤศจิกายน 2026 — งานถัดไปคือศึกษา BLE ด้วย ESP32 เก็บล็อกโทรศัพท์ตามสถานะควบคุม ก่อนขยายไปหูฟังและนาฬิกา ดู [Roadmap](../process_and_workflow/project_roadmap.md) และ [ขอบเขตปัจจุบัน](../docs/CURRENT_RESEARCH_SCOPE.md)
 
-เริ่มจาก [EXP-03 BLE firmware เดิม](firmware/exp03_ble_sniffer/exp03_ble_sniffer.ino) โดยตรวจและปรับการเก็บ payload ดิบ การบันทึกสถานะตัวรับ และการแยก Active/Passive Scan ก่อนเก็บชุดใหม่ ไม่ถือว่ารายงานเดิมรับรองตัวเก็บล็อกตามแผนใหม่แล้ว
+เริ่มนำร่องด้วย [BLE Behavior Logger ใหม่และคู่มือบันทึกไฟล์](firmware/ble_behavior_logger/README.md) สำหรับ Nano ESP32 + Honor X7b 5G ตัว logger คอมไพล์ผ่าน และล็อกที่ผู้ทำโครงการส่งมายืนยันการรับรายงานพร้อมหยุดอัตโนมัติครบ 30 วินาทีแล้ว แต่ยังไม่ได้ยืนยันตัวตนอุปกรณ์อย่างถาวร ส่วน [EXP-03 BLE firmware เดิม](firmware/exp03_ble_sniffer/exp03_ble_sniffer.ino) คงไว้เป็นข้อมูลอ้างอิง
+
+ทดลองเองผ่าน Arduino Serial Monitor ได้โดยใช้ firmware ล่าสุด: `off`, `on`, `share`, `lock`, `unlock` เลือกสถานะและเก็บรอบละ 30 วินาที ค่าที่แยกเพิ่มบนบอร์ดอยู่ในแถว `AD_DETAILS` ดูคู่มือข้างต้น ไฟล์ CMD ตัวเปิดถูกลบตามคำขอแล้ว
+
+## ผลนำร่องล่าสุด
+
+[BLE Pilot 01 — Honor X7b 5G จำนวน 5 เงื่อนไข](reports/ble_pilot_01_honor_states.md): OFF → ON หน้าโฮม → Quick Share → ล็อกจอ → ปลดล็อกกลับ จัด [ต้นฉบับและ CSV](raw_logs/2026-11-17_ble_pilot_01/README.md) พร้อมกราฟและผลตรวจคุณภาพแล้ว แต่ละเงื่อนไขมีรอบจบครบ 30 วินาทีหนึ่งรอบ และแยก OFF เดิมที่ขาดท้ายไว้เป็นหลักฐาน ไม่รวมผล
 
 ## สารบัญและรายงานเดิม
 

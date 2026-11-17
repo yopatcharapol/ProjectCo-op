@@ -1,0 +1,29 @@
+{
+    "schema_version":  1,
+    "capture_id":  "p01_01_bt_off",
+    "state_label":  "BT_OFF",
+    "session_id":  "QUICK",
+    "trial_id":  "trial2",
+    "condition":  "BT_OFF",
+    "device_label":  "HONOR_X7B_5G",
+    "scan_mode":  "passive",
+    "requested_duration_seconds":  30,
+    "observed_duration_seconds":  30.001,
+    "completed":  true,
+    "observed_reports":  372,
+    "last_dropped_reports":  0,
+    "phone_os":  "UNKNOWN",
+    "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+    "notes":  "Replacement OFF capture; user manually turned Bluetooth off; source may include preceding idle state.",
+    "host_start":  "11:52:11.002",
+    "host_end":  "11:52:41.002",
+    "source_sha256":  "7A00094F0B0F2BEA5FD18E527776275B511A913EC69B6DCF98C05B4E9F1A7812",
+    "source_attachment_id":  "9a7948c1-5987-4d74-9970-227ad074de72",
+    "raw_file":  "serial_original.txt",
+    "source_window_lines":  [
+                                9,
+                                402
+                            ],
+    "ad_details_rows":  8,
+    "decode_warning_rows":  0
+}

@@ -1,0 +1,70 @@
+{
+    "schema_version":  1,
+    "session_name":  "BLE_20261117_112956_e6e66f78",
+    "port":  "COM5",
+    "device_label":  "HONOR_X7B_5G",
+    "phone_os":  "UNKNOWN",
+    "core_version":  "2.0.18-arduino.5",
+    "mode":  "passive",
+    "settle_seconds":  5,
+    "status":  "failed",
+    "started_utc":  "2026-11-17T04:29:56.4449004Z",
+    "ended_utc":  "2026-11-17T04:30:20.9669150Z",
+    "steps":  [
+                  {
+                      "trial_id":  "r01_s01",
+                      "condition":  "BT_OFF",
+                      "title":  "ปิด Bluetooth",
+                      "instruction":  "ปิด Bluetooth ใน Settings ของมือถือ วางมือถือที่จุดเดิม",
+                      "duration_seconds":  30,
+                      "status":  "failed",
+                      "confirmed_utc":  "2026-11-17T04:30:15.7906404Z",
+                      "directory":  "D:\\mywork\\ProjectCo-op\\experiments\\raw_logs\\ble_sessions\\BLE_20261117_112956_e6e66f78\\r01_s01",
+                      "error":  "Exception calling \"Open\" with \"0\" argument(s): \"Access to the port \u0027COM5\u0027 is denied.\""
+                  },
+                  {
+                      "trial_id":  "r01_s02",
+                      "condition":  "BT_ON_HOME",
+                      "title":  "เปิด Bluetooth หน้าโฮม",
+                      "instruction":  "เปิด Bluetooth กลับหน้าโฮม ยังไม่เปิด Quick Share และคงจอเปิดไว้",
+                      "duration_seconds":  30,
+                      "status":  "pending",
+                      "confirmed_utc":  null,
+                      "directory":  null,
+                      "error":  null
+                  },
+                  {
+                      "trial_id":  "r01_s03",
+                      "condition":  "SHARING_ON",
+                      "title":  "เปิด Quick Share พร้อมรับ",
+                      "instruction":  "เปิดหน้า Quick Share แบบรับไฟล์ ให้ทุกคนมองเห็น คงจอเปิดไว้",
+                      "duration_seconds":  30,
+                      "status":  "pending",
+                      "confirmed_utc":  null,
+                      "directory":  null,
+                      "error":  null
+                  },
+                  {
+                      "trial_id":  "r01_s04",
+                      "condition":  "SCREEN_LOCKED",
+                      "title":  "ล็อกหน้าจอ",
+                      "instruction":  "คง Bluetooth และการตั้งค่า Quick Share เดิม กดล็อกจอโดยไม่ขยับมือถือ",
+                      "duration_seconds":  30,
+                      "status":  "pending",
+                      "confirmed_utc":  null,
+                      "directory":  null,
+                      "error":  null
+                  },
+                  {
+                      "trial_id":  "r01_s05",
+                      "condition":  "SHARING_ON",
+                      "title":  "ปลดล็อกกลับหน้า Quick Share",
+                      "instruction":  "ปลดล็อก กลับหน้า Quick Share แบบรับไฟล์ ให้ทุกคนมองเห็น โดยไม่ขยับมือถือ",
+                      "duration_seconds":  30,
+                      "status":  "pending",
+                      "confirmed_utc":  null,
+                      "directory":  null,
+                      "error":  null
+                  }
+              ]
+}

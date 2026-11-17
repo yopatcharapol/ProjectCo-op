@@ -1,0 +1,49 @@
+{
+    "status":  "passed",
+    "captures":  5,
+    "report_rows":  2344,
+    "raw_original_copies_checked":  6,
+    "unique_capture_ids":  5,
+    "counts":  [
+                   {
+                       "check":  "counts_p01_01_bt_off",
+                       "passed":  true,
+                       "report_rows":  372,
+                       "fef3_report_rows":  0
+                   },
+                   {
+                       "check":  "counts_p01_02_bt_on_home",
+                       "passed":  true,
+                       "report_rows":  411,
+                       "fef3_report_rows":  0
+                   },
+                   {
+                       "check":  "counts_p01_03_quick_share",
+                       "passed":  true,
+                       "report_rows":  605,
+                       "fef3_report_rows":  214
+                   },
+                   {
+                       "check":  "counts_p01_04_screen_locked",
+                       "passed":  true,
+                       "report_rows":  405,
+                       "fef3_report_rows":  24
+                   },
+                   {
+                       "check":  "counts_p01_05_unlocked_share",
+                       "passed":  true,
+                       "report_rows":  551,
+                       "fef3_report_rows":  213
+                   }
+               ],
+    "original_hashes_match":  true,
+    "report_id_sequences_verified_on_import":  true,
+    "all_selected_trials_duration_complete":  true,
+    "all_durations_seconds":  30.001,
+    "invalid_report_rows":  0,
+    "ad_parse_errors":  0,
+    "reported_queue_drops":  0,
+    "excluded_off_reports":  260,
+    "excluded_off_reason":  "No TRIAL_END; about18.605s in supplied excerpt",
+    "limitations":  "Checks establish consistency of supplied logs, not complete radio reception or physical phone identity."
+}

@@ -1,0 +1,29 @@
+{
+    "schema_version":  1,
+    "capture_id":  "p01_03_quick_share",
+    "state_label":  "QUICK_SHARE_SCREEN_ON",
+    "session_id":  "QUICK",
+    "trial_id":  "trial1",
+    "condition":  "SHARING_ON",
+    "device_label":  "HONOR_X7B_5G",
+    "scan_mode":  "passive",
+    "requested_duration_seconds":  30,
+    "observed_duration_seconds":  30.001,
+    "completed":  true,
+    "observed_reports":  605,
+    "last_dropped_reports":  0,
+    "phone_os":  "UNKNOWN",
+    "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+    "notes":  "Quick Share receive screen visible; actual phone state is user-reported, not inferred from radio data.",
+    "host_start":  "11:46:03.517",
+    "host_end":  "11:46:33.539",
+    "source_sha256":  "8234686BC83131203AEBAA3C052DCAF24D2B224CE30972D1CA0357B3BACC2DA9",
+    "source_attachment_id":  "eb801896-6999-4013-9ebf-ccee41cbea7e",
+    "raw_file":  "serial_original.txt",
+    "source_window_lines":  [
+                                9,
+                                637
+                            ],
+    "ad_details_rows":  10,
+    "decode_warning_rows":  0
+}

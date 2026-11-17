@@ -1,0 +1,174 @@
+{
+    "schema_version":  1,
+    "pilot_id":  "BLE-PILOT-01",
+    "experiment_date":  "2026-11-17",
+    "date_basis":  "User session date; serial host clock has no date or timezone embedded",
+    "status":  "validated",
+    "captures":  [
+                     {
+                         "schema_version":  1,
+                         "capture_id":  "p01_01_bt_off",
+                         "state_label":  "BT_OFF",
+                         "session_id":  "QUICK",
+                         "trial_id":  "trial2",
+                         "condition":  "BT_OFF",
+                         "device_label":  "HONOR_X7B_5G",
+                         "scan_mode":  "passive",
+                         "requested_duration_seconds":  30,
+                         "observed_duration_seconds":  30.001,
+                         "completed":  true,
+                         "observed_reports":  372,
+                         "last_dropped_reports":  0,
+                         "phone_os":  "UNKNOWN",
+                         "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+                         "notes":  "Replacement OFF capture; user manually turned Bluetooth off; source may include preceding idle state.",
+                         "host_start":  "11:52:11.002",
+                         "host_end":  "11:52:41.002",
+                         "source_sha256":  "7A00094F0B0F2BEA5FD18E527776275B511A913EC69B6DCF98C05B4E9F1A7812",
+                         "source_attachment_id":  "9a7948c1-5987-4d74-9970-227ad074de72",
+                         "raw_file":  "serial_original.txt",
+                         "source_window_lines":  [
+                                                     9,
+                                                     402
+                                                 ],
+                         "ad_details_rows":  8,
+                         "decode_warning_rows":  0
+                     },
+                     {
+                         "schema_version":  1,
+                         "capture_id":  "p01_02_bt_on_home",
+                         "state_label":  "BT_ON_HOME",
+                         "session_id":  "QUICK",
+                         "trial_id":  "trial1",
+                         "condition":  "BT_ON_HOME",
+                         "device_label":  "HONOR_X7B_5G",
+                         "scan_mode":  "passive",
+                         "requested_duration_seconds":  30,
+                         "observed_duration_seconds":  30.001,
+                         "completed":  true,
+                         "observed_reports":  411,
+                         "last_dropped_reports":  0,
+                         "phone_os":  "UNKNOWN",
+                         "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+                         "notes":  "Bluetooth on at home screen, without opening Quick Share, per user-provided order.",
+                         "host_start":  "11:44:45.763",
+                         "host_end":  "11:45:15.767",
+                         "source_sha256":  "F3E30E1D703410CA0F10D3BC0ADD8A3C8BF1A4D763F18299C8608AE47BF07169",
+                         "source_attachment_id":  "8d251ea9-358b-47a8-aba5-bf140df5a835",
+                         "raw_file":  "serial_original.txt",
+                         "source_window_lines":  [
+                                                     6,
+                                                     438
+                                                 ],
+                         "ad_details_rows":  8,
+                         "decode_warning_rows":  0
+                     },
+                     {
+                         "schema_version":  1,
+                         "capture_id":  "p01_03_quick_share",
+                         "state_label":  "QUICK_SHARE_SCREEN_ON",
+                         "session_id":  "QUICK",
+                         "trial_id":  "trial1",
+                         "condition":  "SHARING_ON",
+                         "device_label":  "HONOR_X7B_5G",
+                         "scan_mode":  "passive",
+                         "requested_duration_seconds":  30,
+                         "observed_duration_seconds":  30.001,
+                         "completed":  true,
+                         "observed_reports":  605,
+                         "last_dropped_reports":  0,
+                         "phone_os":  "UNKNOWN",
+                         "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+                         "notes":  "Quick Share receive screen visible; actual phone state is user-reported, not inferred from radio data.",
+                         "host_start":  "11:46:03.517",
+                         "host_end":  "11:46:33.539",
+                         "source_sha256":  "8234686BC83131203AEBAA3C052DCAF24D2B224CE30972D1CA0357B3BACC2DA9",
+                         "source_attachment_id":  "eb801896-6999-4013-9ebf-ccee41cbea7e",
+                         "raw_file":  "serial_original.txt",
+                         "source_window_lines":  [
+                                                     9,
+                                                     637
+                                                 ],
+                         "ad_details_rows":  10,
+                         "decode_warning_rows":  0
+                     },
+                     {
+                         "schema_version":  1,
+                         "capture_id":  "p01_04_screen_locked",
+                         "state_label":  "SCREEN_LOCKED",
+                         "session_id":  "QUICK",
+                         "trial_id":  "trial1",
+                         "condition":  "SCREEN_LOCKED",
+                         "device_label":  "HONOR_X7B_5G",
+                         "scan_mode":  "passive",
+                         "requested_duration_seconds":  30,
+                         "observed_duration_seconds":  30.001,
+                         "completed":  true,
+                         "observed_reports":  405,
+                         "last_dropped_reports":  0,
+                         "phone_os":  "UNKNOWN",
+                         "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+                         "notes":  "Screen locked while Bluetooth/Quick Share settings retained, per user-provided order.",
+                         "host_start":  "11:47:22.136",
+                         "host_end":  "11:47:52.117",
+                         "source_sha256":  "0220DC65A101CFCB080410F197A6EBC882EC37D49D9E3AD52DF56135B6C9640E",
+                         "source_attachment_id":  "17c8cfbc-5906-4307-afc6-81d20ce05d5c",
+                         "raw_file":  "serial_original.txt",
+                         "source_window_lines":  [
+                                                     8,
+                                                     435
+                                                 ],
+                         "ad_details_rows":  9,
+                         "decode_warning_rows":  0
+                     },
+                     {
+                         "schema_version":  1,
+                         "capture_id":  "p01_05_unlocked_share",
+                         "state_label":  "QUICK_SHARE_UNLOCKED",
+                         "session_id":  "QUICK",
+                         "trial_id":  "trial1",
+                         "condition":  "SHARING_ON",
+                         "device_label":  "HONOR_X7B_5G",
+                         "scan_mode":  "passive",
+                         "requested_duration_seconds":  30,
+                         "observed_duration_seconds":  30.001,
+                         "completed":  true,
+                         "observed_reports":  551,
+                         "last_dropped_reports":  0,
+                         "phone_os":  "UNKNOWN",
+                         "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+                         "notes":  "Unlocked and returned to Quick Share receive screen; user-provided order.",
+                         "host_start":  "11:48:44.673",
+                         "host_end":  "11:49:14.655",
+                         "source_sha256":  "2BB02418EABD038B89CF877B4409629E57B166A5540364396158E9FB8BE647C7",
+                         "source_attachment_id":  "76cbc620-033d-4917-bca0-df6384f0f7cc",
+                         "raw_file":  "serial_original.txt",
+                         "source_window_lines":  [
+                                                     7,
+                                                     579
+                                                 ],
+                         "ad_details_rows":  8,
+                         "decode_warning_rows":  0
+                     }
+                 ],
+    "excluded":  [
+                     {
+                         "capture_id":  "initial_off_incomplete",
+                         "reason":  "Only about18.605s of received data after scan start;260 REPORT rows; no TRIAL_END. Preserved but not included in the five complete trials.",
+                         "source_sha256":  "707F6787C4ACD07DB8F316A69A1E55303515315EF0CDC4DD8CE2E0961BD35B0C",
+                         "raw_file":  "excluded/initial_off_incomplete.txt"
+                     }
+                 ],
+    "firmware_snapshot":  [
+                              {
+                                  "file":  "firmware_snapshot/ble_behavior_logger.ino",
+                                  "sha256":  "4581857842B4AF8CC4D50386CDE43B20B95D650C88A73798479BF12172A30B9C",
+                                  "basis":  "Workspace source snapshot at analysis time; not a verified flashed binary"
+                              },
+                              {
+                                  "file":  "firmware_snapshot/BleAdParser.h",
+                                  "sha256":  "9D85025FC0BE4F2DDDAE54FB893D3E218A3948075974A872ABF64D9EFED3E5C5",
+                                  "basis":  "Workspace source snapshot at analysis time; not a verified flashed binary"
+                              }
+                          ]
+}

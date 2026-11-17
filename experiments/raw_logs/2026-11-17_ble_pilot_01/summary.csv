@@ -1,0 +1,6 @@
+﻿"capture_id","state_label","trial_id","condition","completed","duration_requested_s","mode","report_rows","valid_rows","invalid_rows","ad_parse_errors","address_count","fef3_report_rows","dropped_reports","notes"
+"p01_01_bt_off","BT_OFF","trial2","BT_OFF","True","30","passive","372","372","0","0","8","0","0","Replacement OFF capture; user manually turned Bluetooth off; source may include preceding idle state."
+"p01_02_bt_on_home","BT_ON_HOME","trial1","BT_ON_HOME","True","30","passive","411","411","0","0","7","0","0","Bluetooth on at home screen, without opening Quick Share, per user-provided order."
+"p01_03_quick_share","QUICK_SHARE_SCREEN_ON","trial1","SHARING_ON","True","30","passive","605","605","0","0","9","214","0","Quick Share receive screen visible; actual phone state is user-reported, not inferred from radio data."
+"p01_04_screen_locked","SCREEN_LOCKED","trial1","SCREEN_LOCKED","True","30","passive","405","405","0","0","9","24","0","Screen locked while Bluetooth/Quick Share settings retained, per user-provided order."
+"p01_05_unlocked_share","QUICK_SHARE_UNLOCKED","trial1","SHARING_ON","True","30","passive","551","551","0","0","8","213","0","Unlocked and returned to Quick Share receive screen; user-provided order."

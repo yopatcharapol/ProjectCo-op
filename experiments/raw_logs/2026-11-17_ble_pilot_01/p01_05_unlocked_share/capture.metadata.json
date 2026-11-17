@@ -1,0 +1,29 @@
+{
+    "schema_version":  1,
+    "capture_id":  "p01_05_unlocked_share",
+    "state_label":  "QUICK_SHARE_UNLOCKED",
+    "session_id":  "QUICK",
+    "trial_id":  "trial1",
+    "condition":  "SHARING_ON",
+    "device_label":  "HONOR_X7B_5G",
+    "scan_mode":  "passive",
+    "requested_duration_seconds":  30,
+    "observed_duration_seconds":  30.001,
+    "completed":  true,
+    "observed_reports":  551,
+    "last_dropped_reports":  0,
+    "phone_os":  "UNKNOWN",
+    "core_version":  "Not embedded in log; local compile target is arduino:esp32 2.0.18-arduino.5",
+    "notes":  "Unlocked and returned to Quick Share receive screen; user-provided order.",
+    "host_start":  "11:48:44.673",
+    "host_end":  "11:49:14.655",
+    "source_sha256":  "2BB02418EABD038B89CF877B4409629E57B166A5540364396158E9FB8BE647C7",
+    "source_attachment_id":  "76cbc620-033d-4917-bca0-df6384f0f7cc",
+    "raw_file":  "serial_original.txt",
+    "source_window_lines":  [
+                                7,
+                                579
+                            ],
+    "ad_details_rows":  8,
+    "decode_warning_rows":  0
+}

@@ -2,6 +2,8 @@
 
 โฟลเดอร์นี้ใช้สำหรับจัดเก็บไฟล์ข้อมูลดิบ (Raw Data) ที่ได้จาก Serial Monitor ของบอร์ด ESP32-Nano หรือบันทึกผ่านสคริปต์
 
+ชุดปัจจุบัน: [BLE Pilot 01 — 17 พฤศจิกายน 2026](2026-11-17_ble_pilot_01/README.md) เก็บต้นฉบับ 5 รอบที่สมบูรณ์ พร้อมไฟล์ OFF เดิมที่ตัดออก, CSV, metadata และผลตรวจ SHA-256 ดู [รายงาน](../reports/ble_pilot_01_honor_states.md) ประกอบ
+
 ---
 
 ## 🏷️ กฎการตั้งชื่อไฟล์ (File Naming Convention)
