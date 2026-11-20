@@ -22,14 +22,23 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <atomic>
+#include <stdarg.h>
 #include "BleAdParser.h"
 
 constexpr uint16_t SCAN_INTERVAL_UNITS = 160; // 100 ms; GAP unit = 0.625 ms
 constexpr uint16_t SCAN_WINDOW_UNITS = 128;   // 80 ms
 constexpr uint32_t SCAN_DURATION_SECONDS = 600;
 constexpr uint32_t HEARTBEAT_MS = 3000;
+constexpr uint32_t STATE_TIMEOUT_MS = 5000;
+constexpr uint32_t SERIAL_LINE_TIMEOUT_MS = 250;
 constexpr size_t QUEUE_LENGTH = 128;
-constexpr size_t COLUMN_COUNT = 20;
+constexpr size_t MAX_REPORTS_PER_LOOP = 4;
+constexpr size_t LINE_BUFFER_CAPACITY = 1280;
+#if ARDUINO_USB_CDC_ON_BOOT && !ARDUINO_USB_MODE
+constexpr size_t SERIAL_CHUNK_MAX = 48; // Stay strictly inside 64-byte TinyUSB CDC TX FIFO.
+#else
+constexpr size_t SERIAL_CHUNK_MAX = 256;
+#endif
 
 struct ScanReport {
   uint32_t timestampMs;
@@ -53,17 +62,22 @@ bool trialOpen = false;
 bool scanning = false;
 bool stopping = false;
 bool stopAfterStart = false;
+bool serialLineDirty = false;
 String sessionId, trialId, deviceLabel, condition, scanMode;
 String commandBuffer;
 bool commandTooLong = false;
 uint32_t lastHeartbeatMs = 0;
 uint32_t lastCommandByteMs = 0;
+uint32_t trialOpenMs = 0;
+uint32_t scanStartedMs = 0;
+uint32_t stopRequestedMs = 0;
 uint32_t quickTrialNumber = 0;
 uint32_t scanDurationSeconds = SCAN_DURATION_SECONDS;
 constexpr size_t DETAILS_CACHE_SIZE = 24;
 ScanReport detailsCache[DETAILS_CACHE_SIZE];
 size_t detailsCacheCount = 0;
 size_t nextDetailsSlot = 0;
+char lineBuf[LINE_BUFFER_CAPACITY];
 
 // Only loop() writes Serial; the BLE callback copies reports into a bounded queue.
 void gapCallback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* param) {
@@ -99,51 +113,179 @@ void gapCallback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* param) {
   }
 }
 
-String hexBytes(const uint8_t* bytes, size_t length) {
-  const char digits[] = "0123456789ABCDEF";
-  String value;
-  value.reserve(length * 2);
-  for (size_t i = 0; i < length; ++i) {
-    value += digits[bytes[i] >> 4];
-    value += digits[bytes[i] & 15];
-  }
-  return value;
-}
+struct CsvBuilder {
+  char* buf;
+  size_t cap;
+  size_t len;
+  size_t cols;
 
-void writeRow(String* fields) {
-  String line;
-  line.reserve(512);
-  for (size_t i = 0; i < COLUMN_COUNT; ++i) {
-    if (i) line += ',';
-    line += '"';
-    for (size_t j = 0; j < fields[i].length(); ++j) {
-      const char ch = fields[i][j];
-      if (ch == '"') line += '"';
-      line += (ch == '\r' || ch == '\n') ? ' ' : ch;
+  void reset(char* target, size_t capacity) {
+    buf = target;
+    cap = capacity;
+    len = 0;
+    cols = 0;
+    if (cap) buf[0] = '\0';
+  }
+
+  void pushChar(char ch) {
+    if (len + 1 < cap) {
+      buf[len++] = ch;
+      buf[len] = '\0';
     }
-    line += '"';
   }
-  Serial.println(line);
+
+  void beginField() {
+    if (cols > 0) pushChar(',');
+    pushChar('"');
+    ++cols;
+  }
+
+  void endField() { pushChar('"'); }
+
+  void fieldText(const char* text) {
+    beginField();
+    if (text) {
+      for (const char* p = text; *p; ++p) {
+        char ch = *p;
+        if (ch == '"') pushChar('"');
+        pushChar((ch == '\r' || ch == '\n') ? ' ' : ch);
+      }
+    }
+    endField();
+  }
+
+  void fieldString(const String& s) { fieldText(s.c_str()); }
+
+  void fieldU32(uint32_t value) {
+    char tmp[16];
+    snprintf(tmp, sizeof(tmp), "%lu", (unsigned long)value);
+    fieldText(tmp);
+  }
+
+  void fieldI32(int32_t value) {
+    char tmp[16];
+    snprintf(tmp, sizeof(tmp), "%ld", (long)value);
+    fieldText(tmp);
+  }
+
+  void fieldHex(const uint8_t* bytes, size_t length) {
+    static const char digits[] = "0123456789ABCDEF";
+    beginField();
+    for (size_t i = 0; i < length; ++i) {
+      pushChar(digits[bytes[i] >> 4]);
+      pushChar(digits[bytes[i] & 15]);
+    }
+    endField();
+  }
+
+  void finishLine() {
+    pushChar('\r');
+    pushChar('\n');
+  }
+
+  void appendBase(const char* type, uint32_t timestamp) {
+    fieldText(type);        // 0: record_type
+    fieldText("1");         // 1: schema_version
+    fieldString(sessionId); // 2: session_id
+    fieldString(trialId);   // 3: trial_id
+    fieldString(deviceLabel); // 4: device_label
+    fieldString(condition); // 5: condition
+    fieldString(scanMode);  // 6: scan_mode
+    fieldU32(timestamp);    // 7: timestamp_ms
+  }
+};
+
+// Write a complete line without entering USBCDC::write()'s unbounded busy-wait
+// when the 64-byte TinyUSB TX FIFO is full or the host pauses reading.
+bool writeSerialBufferSafe(const char* data, size_t length, bool countDropOnStall) {
+  if (!Serial) {
+    if (countDropOnStall) droppedReports.fetch_add(1);
+    return false;
+  }
+
+  uint32_t startMs = millis();
+  if (serialLineDirty) {
+    while (Serial && Serial.availableForWrite() < 2) {
+      if (millis() - startMs >= SERIAL_LINE_TIMEOUT_MS) {
+        if (countDropOnStall) droppedReports.fetch_add(1);
+        return false;
+      }
+      delay(1);
+    }
+    if (!Serial) {
+      if (countDropOnStall) droppedReports.fetch_add(1);
+      return false;
+    }
+    Serial.write("\r\n", 2);
+    serialLineDirty = false;
+    delay(1);
+  }
+
+  // Wait for initial space before starting a new line to avoid partial rows.
+  while (Serial && Serial.availableForWrite() < 16) {
+    if (millis() - startMs >= SERIAL_LINE_TIMEOUT_MS) {
+      if (countDropOnStall) droppedReports.fetch_add(1);
+      return false;
+    }
+    delay(1);
+  }
+  if (!Serial) {
+    if (countDropOnStall) droppedReports.fetch_add(1);
+    return false;
+  }
+
+  size_t offset = 0;
+  while (offset < length) {
+    if (!Serial) {
+      serialLineDirty = (offset > 0);
+      if (countDropOnStall) droppedReports.fetch_add(1);
+      return false;
+    }
+    int avail = Serial.availableForWrite();
+    if (avail <= 0) {
+      if (millis() - startMs >= SERIAL_LINE_TIMEOUT_MS) {
+        serialLineDirty = (offset > 0);
+        if (countDropOnStall) droppedReports.fetch_add(1);
+        return false;
+      }
+      delay(1);
+      continue;
+    }
+    size_t remaining = length - offset;
+    size_t chunk = remaining;
+    if (chunk > (size_t)avail) chunk = (size_t)avail;
+    if (chunk > SERIAL_CHUNK_MAX) chunk = SERIAL_CHUNK_MAX;
+    size_t written = Serial.write(reinterpret_cast<const uint8_t*>(data + offset), chunk);
+    if (written == 0) {
+      if (millis() - startMs >= SERIAL_LINE_TIMEOUT_MS) {
+        serialLineDirty = (offset > 0);
+        if (countDropOnStall) droppedReports.fetch_add(1);
+        return false;
+      }
+      delay(1);
+      continue;
+    }
+    offset += written;
+    // Yield 1 ms between chunks so arduino_usb_events drains its 5-slot TX event queue.
+    if (offset < length) delay(1);
+  }
+  return true;
 }
 
-void baseRow(String* fields, const char* type, uint32_t timestamp) {
-  fields[0] = type;
-  fields[1] = "1";
-  fields[2] = sessionId;
-  fields[3] = trialId;
-  fields[4] = deviceLabel;
-  fields[5] = condition;
-  fields[6] = scanMode;
-  fields[7] = String(timestamp);
-  fields[19] = String(droppedReports.load());
+void emitEvent(const char* event, const char* detail) {
+  CsvBuilder csv;
+  csv.reset(lineBuf, sizeof(lineBuf));
+  csv.appendBase("EVENT", millis());
+  for (int col = 8; col <= 16; ++col) csv.fieldText("");
+  csv.fieldText(event);                      // 17: event
+  csv.fieldText(detail);                     // 18: detail
+  csv.fieldU32(droppedReports.load());       // 19: dropped_reports
+  csv.finishLine();
+  writeSerialBufferSafe(csv.buf, csv.len, false);
 }
 
 void emitEvent(const char* event, const String& detail) {
-  String fields[COLUMN_COUNT];
-  baseRow(fields, "EVENT", millis());
-  fields[17] = event;
-  fields[18] = detail;
-  writeRow(fields);
+  emitEvent(event, detail.c_str());
 }
 
 void emitAdDetails(const ScanReport& report, const char* mac) {
@@ -157,51 +299,66 @@ void emitAdDetails(const ScanReport& report, const char* mac) {
   nextDetailsSlot = (nextDetailsSlot + 1) % DETAILS_CACHE_SIZE;
   if (detailsCacheCount < DETAILS_CACHE_SIZE) ++detailsCacheCount;
 
-  BleAdDecoded decoded = {};
+  static BleAdDecoded decoded;
+  memset(&decoded, 0, sizeof(decoded));
   bleDecodeAd(report.data, report.advLength, decoded);
   bleDecodeAd(report.data + report.advLength, report.responseLength, decoded);
-  String detail;
-  detail.reserve(768);
-  detail = String("name=") + (decoded.name[0] ? decoded.name : "not_advertised");
-  detail += String(";manufacturer_ids=") + (decoded.manufacturerIds[0] ? decoded.manufacturerIds : "not_advertised");
-  detail += String(";service_uuids16=") + (decoded.serviceUuids16[0] ? decoded.serviceUuids16 : "not_advertised");
-  detail += String(";service_uuids32=") + (decoded.serviceUuids32[0] ? decoded.serviceUuids32 : "not_advertised");
-  detail += String(";service_uuids128=") + (decoded.serviceUuids128[0] ? decoded.serviceUuids128 : "not_advertised");
-  detail += String(";tx_power_dbm=") + (decoded.txPowerDbm[0] ? decoded.txPowerDbm : "not_advertised");
-  detail += String(";flags=") + (decoded.flags[0] ? decoded.flags : "not_advertised");
-  detail += String(";fef3_service=") + (decoded.hasFef3Service ? "yes" : "no");
-  detail += String(";decode_warnings=") + decoded.warnings;
-  String fields[COLUMN_COUNT];
-  baseRow(fields, "EVENT", report.timestampMs);
-  fields[8] = String(report.reportId);
-  fields[9] = mac;
-  fields[10] = String(report.addressType);
-  fields[11] = String(report.rssi);
-  fields[17] = "AD_DETAILS";
-  fields[18] = detail;
-  writeRow(fields);
+
+  static char detailBuf[768];
+  snprintf(
+      detailBuf, sizeof(detailBuf),
+      "name=%s;manufacturer_ids=%s;service_uuids16=%s;service_uuids32=%s;service_uuids128=%s;tx_power_dbm=%s;flags=%s;fef3_service=%s;decode_warnings=%u",
+      decoded.name[0] ? decoded.name : "not_advertised",
+      decoded.manufacturerIds[0] ? decoded.manufacturerIds : "not_advertised",
+      decoded.serviceUuids16[0] ? decoded.serviceUuids16 : "not_advertised",
+      decoded.serviceUuids32[0] ? decoded.serviceUuids32 : "not_advertised",
+      decoded.serviceUuids128[0] ? decoded.serviceUuids128 : "not_advertised",
+      decoded.txPowerDbm[0] ? decoded.txPowerDbm : "not_advertised",
+      decoded.flags[0] ? decoded.flags : "not_advertised",
+      decoded.hasFef3Service ? "yes" : "no",
+      decoded.warnings);
+
+  CsvBuilder csv;
+  csv.reset(lineBuf, sizeof(lineBuf));
+  csv.appendBase("EVENT", report.timestampMs);
+  csv.fieldU32(report.reportId);             // 8: report_id
+  csv.fieldText(mac);                        // 9: mac
+  csv.fieldU32(report.addressType);          // 10: addr_type
+  csv.fieldI32(report.rssi);                 // 11: rssi_dbm
+  for (int col = 12; col <= 16; ++col) csv.fieldText("");
+  csv.fieldText("AD_DETAILS");               // 17: event
+  csv.fieldText(detailBuf);                  // 18: detail
+  csv.fieldU32(droppedReports.load());       // 19: dropped_reports
+  csv.finishLine();
+  writeSerialBufferSafe(csv.buf, csv.len, false);
 }
 
 void drainReports() {
   ScanReport report;
-  // Limit work per pass so commands and status events are serviced under load.
-  for (int i = 0; i < 16 && xQueueReceive(reportQueue, &report, 0) == pdTRUE; ++i) {
-    String fields[COLUMN_COUNT];
-    baseRow(fields, "REPORT", report.timestampMs);
-    fields[8] = String(report.reportId);
+  // Limit work per pass so USB events, commands and status events stay responsive.
+  for (size_t i = 0; i < MAX_REPORTS_PER_LOOP && xQueueReceive(reportQueue, &report, 0) == pdTRUE; ++i) {
     char mac[18];
     snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X",
              report.mac[0], report.mac[1], report.mac[2],
              report.mac[3], report.mac[4], report.mac[5]);
-    fields[9] = mac;
-    fields[10] = String(report.addressType);
-    fields[11] = String(report.rssi);
-    fields[12] = String(report.eventType);
-    fields[13] = String(report.advLength);
-    fields[14] = String(report.responseLength);
-    fields[15] = hexBytes(report.data, report.advLength);
-    fields[16] = hexBytes(report.data + report.advLength, report.responseLength);
-    writeRow(fields);
+
+    CsvBuilder csv;
+    csv.reset(lineBuf, sizeof(lineBuf));
+    csv.appendBase("REPORT", report.timestampMs);
+    csv.fieldU32(report.reportId);           // 8: report_id
+    csv.fieldText(mac);                      // 9: mac
+    csv.fieldU32(report.addressType);        // 10: addr_type
+    csv.fieldI32(report.rssi);               // 11: rssi_dbm
+    csv.fieldU32(report.eventType);          // 12: event_type
+    csv.fieldU32(report.advLength);          // 13: adv_len
+    csv.fieldU32(report.responseLength);     // 14: scan_rsp_len
+    csv.fieldHex(report.data, report.advLength);                          // 15: adv_hex
+    csv.fieldHex(report.data + report.advLength, report.responseLength);  // 16: scan_rsp_hex
+    csv.fieldText("");                       // 17: event
+    csv.fieldText("");                       // 18: detail
+    csv.fieldU32(droppedReports.load());     // 19: dropped_reports
+    csv.finishLine();
+    writeSerialBufferSafe(csv.buf, csv.len, true);
     emitAdDetails(report, mac);
   }
 }
@@ -210,9 +367,15 @@ void closeTrial(const char* reason) {
   scanning = false;
   stopping = false;
   stopAfterStart = false;
-  // Called only after the controller confirms stop/completion (or failed start).
-  while (uxQueueMessagesWaiting(reportQueue)) drainReports();
-  emitEvent("TRIAL_END", String(reason) + ";received_reports=" + reportCount.load());
+  // Drain remaining queued reports with a bounded pass count so closeTrial cannot hang.
+  for (int pass = 0; pass < 40 && uxQueueMessagesWaiting(reportQueue); ++pass) {
+    drainReports();
+    delay(1);
+  }
+  xQueueReset(reportQueue);
+  char detail[96];
+  snprintf(detail, sizeof(detail), "%s;received_reports=%lu", reason, (unsigned long)reportCount.load());
+  emitEvent("TRIAL_END", detail);
   trialOpen = false;
 }
 
@@ -246,8 +409,11 @@ void handleCommand(String input) {
             " HONOR_X7B_5G " + quickCondition + " passive";
   }
   if (shortCommand == "status") {
-    emitEvent("STATUS", String("trial_open=") + trialOpen + ";scanning=" + scanning +
-              ";stopping=" + stopping + ";received_reports=" + reportCount.load());
+    char detail[128];
+    snprintf(detail, sizeof(detail), "trial_open=%d;scanning=%d;stopping=%d;received_reports=%lu;free_heap=%lu",
+             (int)trialOpen, (int)scanning, (int)stopping,
+             (unsigned long)reportCount.load(), (unsigned long)ESP.getFreeHeap());
+    emitEvent("STATUS", detail);
     return;
   }
   if (shortCommand == "stop") {
@@ -268,9 +434,10 @@ void handleCommand(String input) {
     esp_err_t err = esp_ble_gap_stop_scanning();
     if (err == ESP_OK) {
       stopping = true;
+      stopRequestedMs = millis();
       emitEvent("STOP_REQUESTED", "Controller stop requested");
     }
-    else emitEvent("STOP_REQUEST_ERROR", String(esp_err_to_name(err)));
+    else emitEvent("STOP_REQUEST_ERROR", esp_err_to_name(err));
     return;
   }
   String tokens[6];
@@ -298,8 +465,11 @@ void handleCommand(String input) {
   scanDurationSeconds = requestedDuration;
   detailsCacheCount = 0;
   nextDetailsSlot = 0;
+  xQueueReset(reportQueue);
+  paramsStatus.store(-1); startStatus.store(-1); stopStatus.store(-1);
   reportCount.store(0); droppedReports.store(0); scanFinished.store(false);
   trialOpen = true;
+  trialOpenMs = millis();
   emitEvent("TRIAL_BEGIN", "Labels describe the experiment, not verified transmitter identity");
   scanParams = {};
   scanParams.scan_type = scanMode == "active" ? BLE_SCAN_TYPE_ACTIVE : BLE_SCAN_TYPE_PASSIVE;
@@ -308,18 +478,35 @@ void handleCommand(String input) {
   scanParams.scan_interval = SCAN_INTERVAL_UNITS;
   scanParams.scan_window = SCAN_WINDOW_UNITS;
   scanParams.scan_duplicate = BLE_SCAN_DUPLICATE_DISABLE;
-  emitEvent("SCAN_CONFIG", String("interval_ms=100;window_ms=80;duplicate_filter=disabled;duration_s=") + scanDurationSeconds + ";legacy_reports_only");
+  char cfgDetail[128];
+  snprintf(cfgDetail, sizeof(cfgDetail),
+           "interval_ms=100;window_ms=80;duplicate_filter=disabled;duration_s=%lu;legacy_reports_only",
+           (unsigned long)scanDurationSeconds);
+  emitEvent("SCAN_CONFIG", cfgDetail);
   esp_err_t err = esp_ble_gap_set_scan_params(&scanParams);
   if (err != ESP_OK) closeTrial(esp_err_to_name(err));
 }
 
 void setup() {
   Serial.begin(115200);
+#if ARDUINO_USB_CDC_ON_BOOT
+  Serial.setTxTimeoutMs(50);
+#endif
   uint32_t waitStart = millis();
   while (!Serial && millis() - waitStart < 3000) delay(10);
-  Serial.println("record_type,schema_version,session_id,trial_id,device_label,condition,scan_mode,timestamp_ms,report_id,mac,addr_type,rssi_dbm,event_type,adv_len,scan_rsp_len,adv_hex,scan_rsp_hex,event,detail,dropped_reports");
-  emitEvent("BOOT", String("chip=") + ESP.getChipModel() + ";sdk=" + ESP.getSdkVersion() +
-            ";reset_reason=" + String((int)esp_reset_reason()));
+  const char* header = "record_type,schema_version,session_id,trial_id,device_label,condition,scan_mode,timestamp_ms,report_id,mac,addr_type,rssi_dbm,event_type,adv_len,scan_rsp_len,adv_hex,scan_rsp_hex,event,detail,dropped_reports\r\n";
+  writeSerialBufferSafe(header, strlen(header), false);
+  char bootDetail[160];
+#if ARDUINO_USB_CDC_ON_BOOT && ARDUINO_USB_MODE
+  const char* usbModeName = "hwcdc";
+#elif ARDUINO_USB_CDC_ON_BOOT
+  const char* usbModeName = "tinyusb";
+#else
+  const char* usbModeName = "uart";
+#endif
+  snprintf(bootDetail, sizeof(bootDetail), "chip=%s;sdk=%s;reset_reason=%d;usb=%s",
+           ESP.getChipModel(), ESP.getSdkVersion(), (int)esp_reset_reason(), usbModeName);
+  emitEvent("BOOT", bootDetail);
   reportQueue = xQueueCreate(QUEUE_LENGTH, sizeof(ScanReport));
   if (!reportQueue) {
     emitEvent("FATAL", "Could not allocate report queue");
@@ -338,8 +525,10 @@ void finishSerialCommand() {
 }
 
 void serviceSerialCommands() {
-  while (Serial.available()) {
-    char c = Serial.read();
+  while (Serial.available() > 0) {
+    int byteRead = Serial.read();
+    if (byteRead < 0) break;
+    char c = (char)byteRead;
     lastCommandByteMs = millis();
     if (c == '\n' || c == '\r') {
       finishSerialCommand();
@@ -376,6 +565,7 @@ void loop() {
     if (status != ESP_BT_STATUS_SUCCESS) closeTrial("SCAN_START_FAILED");
     else {
       scanning = true;
+      scanStartedMs = millis();
       emitEvent("SCAN_STARTED", "Controller confirmed scan start");
       if (stopAfterStart) {
         stopAfterStart = false;
@@ -389,11 +579,34 @@ void loop() {
     else { stopping = false; emitEvent("SCAN_STOP_FAILED", String(status)); }
   }
   if (scanFinished.exchange(false) && trialOpen) closeTrial("DURATION_COMPLETE");
+
+  // Safety timeouts so a missed GAP callback can never leave trialOpen stuck.
+  uint32_t now = millis();
+  if (trialOpen && !scanning && (now - trialOpenMs) >= STATE_TIMEOUT_MS) {
+    closeTrial("START_TIMEOUT");
+  } else if (trialOpen && scanning && !stopping &&
+             (now - scanStartedMs) >= (scanDurationSeconds + 5UL) * 1000UL) {
+    esp_err_t err = esp_ble_gap_stop_scanning();
+    if (err == ESP_OK) {
+      stopping = true;
+      stopRequestedMs = now;
+      emitEvent("STOP_REQUESTED", "Safety duration timeout requested controller stop");
+    } else {
+      closeTrial("DURATION_TIMEOUT");
+    }
+  } else if (trialOpen && stopping && (now - stopRequestedMs) >= STATE_TIMEOUT_MS) {
+    closeTrial("STOP_TIMEOUT");
+  }
+
   drainReports();
   serviceSerialCommands();
-  if (millis() - lastHeartbeatMs >= HEARTBEAT_MS) {
-    lastHeartbeatMs = millis();
-    emitEvent("HEARTBEAT", String("scanning=") + scanning + ";received_reports=" + reportCount.load());
+  now = millis();
+  if (now - lastHeartbeatMs >= HEARTBEAT_MS) {
+    lastHeartbeatMs = now;
+    char hbDetail[96];
+    snprintf(hbDetail, sizeof(hbDetail), "scanning=%d;received_reports=%lu;free_heap=%lu",
+             (int)scanning, (unsigned long)reportCount.load(), (unsigned long)ESP.getFreeHeap());
+    emitEvent("HEARTBEAT", hbDetail);
   }
   delay(1);
 }
