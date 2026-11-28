@@ -395,7 +395,7 @@ void handleCommand(String input) {
   shortCommand.toLowerCase();
   uint32_t requestedDuration = SCAN_DURATION_SECONDS;
   if (shortCommand == "help") {
-    emitEvent("HELP", "on=Bluetooth on/home; off=Bluetooth off; share=Quick Share visible; lock=screen locked; unlock=Quick Share after unlock; each scans 30s. Change phone state yourself before sending. stop/status also supported.");
+    emitEvent("HELP", "on=Bluetooth on/home; off=Bluetooth off; share=Quick Share visible; lock=screen locked; unlock=Quick Share after unlock; each scans 30s for REDMI_PAD_PRO. Change target device state before sending. stop/status also supported.");
     return;
   }
   if (shortCommand == "on" || shortCommand == "off" || shortCommand == "share" ||
@@ -406,7 +406,7 @@ void handleCommand(String input) {
     else if (shortCommand == "share" || shortCommand == "unlock") quickCondition = "SHARING_ON";
     else if (shortCommand == "lock") quickCondition = "SCREEN_LOCKED";
     input = String("start QUICK trial") + String(++quickTrialNumber) +
-            " HONOR_X7B_5G " + quickCondition + " passive";
+            " REDMI_PAD_PRO " + quickCondition + " passive";
   }
   if (shortCommand == "status") {
     char detail[128];

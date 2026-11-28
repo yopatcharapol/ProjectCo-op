@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "session_id": "S20261127_223443_6bf72b64",
+  "trial_id": "bt_off03",
+  "device_label": "REDMI_PAD_PRO",
+  "condition": "BT_OFF",
+  "scan_mode": "passive",
+  "requested_duration_seconds": 300,
+  "port": "COM6",
+  "baud_rate": 115200,
+  "board": "Arduino Nano ESP32",
+  "phone_os": "UNKNOWN",
+  "core_version": "2.0.18-arduino.5",
+  "started_utc": "2026-11-27T15:34:43.6816059Z",
+  "ended_utc": "2026-11-27T15:39:44.1047416Z",
+  "completed": true,
+  "observed_reports": 1669,
+  "last_dropped_reports": 1,
+  "notes": "Third passive BT_OFF trial. User said go after instruction to keep Redmi Pad Pro at the same position, turn Bluetooth off in Settings and return to the Home screen. Hardware CDC with DTR off. Android/HyperOS and exact placement details not recorded."
+}

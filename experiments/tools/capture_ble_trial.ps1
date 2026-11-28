@@ -5,7 +5,7 @@ param(
     [string]$Condition,
     [ValidateSet('passive', 'active')][string]$Mode = 'passive',
     [ValidateRange(10, 600)][int]$DurationSeconds = 300,
-    [ValidatePattern('^[A-Za-z0-9_-]{1,40}$')][string]$DeviceLabel = 'HONOR_X7B_5G',
+    [ValidatePattern('^[A-Za-z0-9_-]{1,40}$')][string]$DeviceLabel = 'REDMI_PAD_PRO',
     [ValidatePattern('^[A-Za-z0-9_-]{1,40}$')][string]$TrialId = 'trial01',
     [string]$PhoneOs = 'UNKNOWN',
     [string]$CoreVersion = 'UNKNOWN',

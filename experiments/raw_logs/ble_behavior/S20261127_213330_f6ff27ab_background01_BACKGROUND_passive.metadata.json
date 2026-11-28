@@ -1,0 +1,20 @@
+{
+    "schema_version":  1,
+    "session_id":  "S20261127_213330_f6ff27ab",
+    "trial_id":  "background01",
+    "device_label":  "REDMI_PAD_PRO",
+    "condition":  "BACKGROUND",
+    "scan_mode":  "passive",
+    "requested_duration_seconds":  300,
+    "port":  "COM5",
+    "baud_rate":  115200,
+    "board":  "Arduino Nano ESP32",
+    "phone_os":  "UNKNOWN",
+    "core_version":  "UNKNOWN",
+    "started_utc":  "2026-11-27T14:33:30.9495521Z",
+    "ended_utc":  "2026-11-27T14:33:31.0719806Z",
+    "completed":  false,
+    "observed_reports":  0,
+    "last_dropped_reports":  0,
+    "notes":  "User confirmed ready after instruction to remove Redmi Pad Pro from the test area. Android/HyperOS and firmware build on the board were not verified."
+}

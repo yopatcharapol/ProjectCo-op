@@ -6,3 +6,6 @@ share_friend/
 __pycache__/
 *.pyc
 *.tmp
+
+# Personal BLE study plan
+/reports_and_notes/2026/11/ble-study-plan.local.md

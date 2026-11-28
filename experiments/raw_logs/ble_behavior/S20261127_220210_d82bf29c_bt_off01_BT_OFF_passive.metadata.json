@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "session_id": "S20261127_220210_d82bf29c",
+  "trial_id": "bt_off01",
+  "device_label": "REDMI_PAD_PRO",
+  "condition": "BT_OFF",
+  "scan_mode": "passive",
+  "requested_duration_seconds": 300,
+  "port": "COM6",
+  "baud_rate": 115200,
+  "board": "Arduino Nano ESP32",
+  "phone_os": "UNKNOWN",
+  "core_version": "2.0.18-arduino.5",
+  "started_utc": "2026-11-27T15:02:10.3889829Z",
+  "ended_utc": "2026-11-27T15:07:10.6550543Z",
+  "completed": true,
+  "observed_reports": 1731,
+  "last_dropped_reports": 0,
+  "notes": "User confirmed ready after instruction to place Redmi Pad Pro at the test position and disable Bluetooth in Settings. Format and scan mode match background01. Hardware CDC with DTR off. Android/HyperOS and physical placement details not recorded."
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "session_id": "S20261128_071257_4c50047f",
+  "trial_id": "bt_on_home05",
+  "device_label": "REDMI_PAD_PRO",
+  "condition": "BT_ON_HOME",
+  "scan_mode": "passive",
+  "requested_duration_seconds": 300,
+  "port": "COM6",
+  "baud_rate": 115200,
+  "board": "Arduino Nano ESP32",
+  "phone_os": "UNKNOWN",
+  "core_version": "2.0.18-arduino.5",
+  "started_utc": "2026-11-28T00:12:57.9706946Z",
+  "ended_utc": "2026-11-28T00:17:58.2323169Z",
+  "completed": true,
+  "observed_reports": 6577,
+  "last_dropped_reports": 0,
+  "notes": "Fifth passive BT_ON_HOME trial after bt_off05. User said on ble go; same test position and Home screen without opening Quick Share under the BT_ON_HOME protocol. Hardware CDC with DTR off. Android/HyperOS and exact placement details not recorded."
+}

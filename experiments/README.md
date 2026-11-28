@@ -1,8 +1,8 @@
 # การทดลอง: เป้าหมายปัจจุบันและคลังงานเดิม
 
-อัปเดต: 17 พฤศจิกายน 2026 — งานถัดไปคือศึกษา BLE ด้วย ESP32 เก็บล็อกโทรศัพท์ตามสถานะควบคุม ก่อนขยายไปหูฟังและนาฬิกา ดู [Roadmap](../process_and_workflow/project_roadmap.md) และ [ขอบเขตปัจจุบัน](../docs/CURRENT_RESEARCH_SCOPE.md)
+อัปเดตอุปกรณ์เป้าหมายเมื่อ 27 พฤศจิกายน 2026 งานถัดไปคือเก็บล็อก BLE ของ Redmi Pad Pro ตามสถานะควบคุมด้วย Arduino Nano ESP32 ดู [Roadmap](../process_and_workflow/project_roadmap.md) และ [ขอบเขตปัจจุบัน](../docs/CURRENT_RESEARCH_SCOPE.md)
 
-เริ่มนำร่องด้วย [BLE Behavior Logger ใหม่และคู่มือบันทึกไฟล์](firmware/ble_behavior_logger/README.md) สำหรับ Nano ESP32 + Honor X7b 5G ตัว logger คอมไพล์ผ่าน และล็อกที่ผู้ทำโครงการส่งมายืนยันการรับรายงานพร้อมหยุดอัตโนมัติครบ 30 วินาทีแล้ว แต่ยังไม่ได้ยืนยันตัวตนอุปกรณ์อย่างถาวร ส่วน [EXP-03 BLE firmware เดิม](firmware/exp03_ble_sniffer/exp03_ble_sniffer.ino) คงไว้เป็นข้อมูลอ้างอิง
+ใช้ [BLE Behavior Logger และคู่มือบันทึกไฟล์](firmware/ble_behavior_logger/README.md) สำหรับรอบใหม่ของ Redmi Pad Pro ผลนำร่องก่อนหน้านี้เก็บจาก Honor X7b 5G และยืนยันการรับรายงานพร้อมหยุดอัตโนมัติครบ 30 วินาที ส่วน [EXP-03 BLE firmware เดิม](firmware/exp03_ble_sniffer/exp03_ble_sniffer.ino) ใช้อ้างอิงพัฒนาการของตัวเก็บข้อมูล
 
 ทดลองเองผ่าน Arduino Serial Monitor ได้โดยใช้ firmware ล่าสุด: `off`, `on`, `share`, `lock`, `unlock` เลือกสถานะและเก็บรอบละ 30 วินาที ค่าที่แยกเพิ่มบนบอร์ดอยู่ในแถว `AD_DETAILS` ดูคู่มือข้างต้น ไฟล์ CMD ตัวเปิดถูกลบตามคำขอแล้ว
 

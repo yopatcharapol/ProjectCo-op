@@ -1,0 +1,20 @@
+{
+    "schema_version":  1,
+    "session_id":  "S20261128_072847_fbfeb78b",
+    "trial_id":  "link01",
+    "device_label":  "REDMI_PAD_PRO",
+    "condition":  "MULTIPHASE",
+    "scan_mode":  "passive",
+    "requested_duration_seconds":  600,
+    "port":  "COM6",
+    "baud_rate":  115200,
+    "board":  "Arduino Nano ESP32",
+    "phone_os":  "UNKNOWN",
+    "core_version":  "2.0.18-arduino.5",
+    "started_utc":  "2026-11-28T00:28:47.4198534Z",
+    "ended_utc":  "2026-11-28T00:28:47.5346726Z",
+    "completed":  false,
+    "observed_reports":  0,
+    "last_dropped_reports":  0,
+    "notes":  "Continuous scan. Host UTC phase markers in phase_markers.csv; board timestamps relative to SCAN_STARTED. Hardware CDC with DTR off."
+}

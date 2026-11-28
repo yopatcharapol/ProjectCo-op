@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "session_id": "S20261127_215258_109bd3a7",
+  "trial_id": "background01",
+  "device_label": "REDMI_PAD_PRO",
+  "condition": "BACKGROUND",
+  "scan_mode": "passive",
+  "requested_duration_seconds": 300,
+  "port": "COM6",
+  "baud_rate": 115200,
+  "board": "Arduino Nano ESP32",
+  "phone_os": "UNKNOWN",
+  "core_version": "2.0.18-arduino.5",
+  "started_utc": "2026-11-27T14:52:58.6521016Z",
+  "ended_utc": "2026-11-27T14:57:59.9292245Z",
+  "completed": true,
+  "observed_reports": 1974,
+  "last_dropped_reports": 0,
+  "notes": "Redmi Pad Pro outside the test area per user confirmation. BLE logger uses Hardware CDC with DTR off. Malformed startup rows before sending start are retained only in the raw log. Android/HyperOS not recorded."
+}

@@ -1,14 +1,14 @@
 # BLE Behavior Logger — ชุดทดลองนำร่อง
 
-ใช้กับ Arduino Nano ESP32 ตัวเดิมและโทรศัพท์ Honor X7b 5G ที่ผู้ทำโครงการยืนยันแล้ว ยังต้องบันทึกเวอร์ชัน OS ของเครื่องและ core ที่เลือกใช้จริงก่อนเก็บชุดหลัก
+ชุดถัดไปใช้ Arduino Nano ESP32 ตัวเดิมและแท็บเล็ต Redmi Pad Pro จดรุ่นย่อย เวอร์ชัน Android/HyperOS จากเครื่อง และ core ที่เลือกใช้จริงก่อนเก็บข้อมูล
 
 เป็น sketch ใหม่เพื่อรักษา EXP-03 และข้อมูลเก่าไว้ ใช้ BLE GAP legacy scan reports ผ่าน Bluedroid โดยไม่รวม MAC เป็นเครื่องเดียว ไม่ประมาณระยะ และไม่แปล Manufacturer ID เป็นฟีเจอร์โดยอัตโนมัติ
 
 ## ทดลองเองผ่าน Arduino Serial Monitor
 
-ใช้ `ble_behavior_logger.ino` ล่าสุดพร้อมไฟล์ `BleAdParser.h` ในโฟลเดอร์เดียวกัน แล้ว Verify/Upload ใหม่เพื่อใช้การแยกค่าบนบอร์ด เปิด Serial Monitor ที่ 115200 baud และเปลี่ยนสถานะบนมือถือด้วยตัวเองก่อนส่งคำสั่ง ไม่มีการเปลี่ยนสถานะมือถืออัตโนมัติ
+ใช้ `ble_behavior_logger.ino` ล่าสุดพร้อมไฟล์ `BleAdParser.h` ในโฟลเดอร์เดียวกัน แล้ว Verify/Upload ใหม่เพื่อใช้การแยกค่าบนบอร์ด เปิด Serial Monitor ที่ 115200 baud และเปลี่ยนสถานะบนแท็บเล็ตก่อนส่งคำสั่ง
 
-| คำสั่ง | สถานะที่คุณจัดเตรียมบนมือถือ | ระยะสแกน |
+| คำสั่ง | สถานะที่คุณจัดเตรียมบนแท็บเล็ต | ระยะสแกน |
 | :--- | :--- | :--- |
 | `off` | ปิด Bluetooth | 30 วินาที |
 | `on` | เปิด Bluetooth อยู่หน้าโฮม | 30 วินาที |
@@ -24,7 +24,7 @@
 
 จะแสดง `AD_DETAILS` เมื่อพบ MAC/payload ชุดใหม่ในรอบนั้น เพื่อลดข้อความซ้ำ ใช้ cache 24 รายการแบบวนทับ จึงอาจมีรายละเอียดซ้ำอีกเมื่อรายการเก่าถูกแทนที่ ข้อมูลที่ไม่มีประกาศใช้ `not_advertised` ไม่เดาค่าเพิ่ม `decode_warnings` บอก AD ที่ยาวเกินขอบเขต/ผิดรูป หรือช่องแสดงผลเต็ม; payload ดิบยังเก็บใน REPORT
 
-ชื่อและรหัสที่ประกาศไม่ใช่หลักฐานยืนยันตัว Honor, TX power ที่ประกาศไม่ใช่กำลังส่งที่บอร์ดวัดจริง และ `fef3_service=yes` เป็นเพียงการพบรหัสบริการนั้น ไม่ใช่การยืนยัน Quick Share หรือเจ้าของเครื่อง
+ใช้ชื่อและรหัสบริการเป็นเบาะแสประกอบรอบควบคุม `fef3_service=yes` ระบุว่าพบรหัสที่ตามอยู่ ส่วน TX power มาจากข้อมูลที่เครื่องส่งประกาศ
 
 ไฟล์ CMD ตัวเปิดถูกลบตามคำขอแล้ว เครื่องมือ PowerShell เดิมยังเก็บไว้เป็นทางเลือก แต่ไม่จำเป็นสำหรับการทดลองผ่าน Serial Monitor ส่วนรูปแบบ CSV เดิมยังคง 20 คอลัมน์ เพื่อให้เครื่องมือเก่าอ่านได้
 
@@ -48,10 +48,10 @@
 
 Upload firmware ล่าสุดก่อน ใช้ Serial Monitor ที่ 115200 baud:
 
-1. ปิด Bluetooth บนมือถือ วางที่เดิม ส่ง `off` แล้วปล่อยไว้ บอร์ดสแกน 30 วินาทีและหยุดเอง เก็บข้อความรอบนี้เป็น `off.txt`
-2. เปิด Bluetooth บนมือถือ กลับหน้าโฮม ส่ง `on` แล้วรอหยุดเอง เก็บข้อความรอบนี้เป็น `on.txt`
+1. ปิด Bluetooth บนแท็บเล็ต วางที่เดิม ส่ง `off` แล้วปล่อยไว้ บอร์ดสแกน 30 วินาทีและหยุดเอง เก็บข้อความรอบนี้เป็น `off.txt`
+2. เปิด Bluetooth บนแท็บเล็ต กลับหน้าโฮม ส่ง `on` แล้วรอหยุดเอง เก็บข้อความรอบนี้เป็น `on.txt`
 
-คำสั่งนี้เพียงติดป้ายสถานะทดลอง ไม่ได้เปิด/ปิด Bluetooth บนมือถือให้ ต้องเปลี่ยนสถานะที่มือถือเอง
+เปลี่ยนสถานะ Bluetooth บนเครื่องเป้าหมายก่อนส่งคำสั่งสั้น คำสั่งสั้นของ firmware รุ่นนี้ติดป้าย `REDMI_PAD_PRO` หากยังใช้ firmware ที่ติดป้าย Honor ให้อัปโหลดรุ่นนี้หรือใช้คำสั่ง `start` ที่ระบุป้ายกำกับเอง
 
 `on`, `off`, `share`, `lock`, `unlock`, `stop`, `status`, `help` ใช้ได้ทั้ง Newline, Carriage return, Both NL & CR และ No line ending (แบบสุดท้ายรอรับคำสั่งหลังไม่มีอักษรเพิ่ม 300 ms) ส่วนคำสั่ง `start ...` แบบยาวยังต้องมี Newline หรือ Carriage return
 
@@ -64,7 +64,7 @@ Upload firmware ล่าสุดก่อน ใช้ Serial Monitor ที�
 ส่งคำสั่งทีละบรรทัด ใช้ label ภาษาอังกฤษ ตัวเลข `_` หรือ `-` ยาวไม่เกิน 40 ตัว:
 
 ```text
-start S01 trial01 HONOR_X7B_5G BACKGROUND passive
+start S01 trial01 REDMI_PAD_PRO BACKGROUND passive
 status
 stop
 ```
@@ -76,26 +76,28 @@ stop
 ปิด Serial Monitor ก่อน เพราะเปิดพอร์ตพร้อมกันไม่ได้ ดูพอร์ตจาก Arduino IDE แล้วแทน `COM7` ด้วยค่าจริง รันจากโฟลเดอร์ราก Repo:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy RemoteSigned -File "experiments/tools/capture_ble_trial.ps1" -Port "COM7" -Condition "BACKGROUND" -DurationSeconds 300 -TrialId "trial01" -PhoneOs "UNKNOWN" -CoreVersion "UNKNOWN"
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File "experiments/tools/capture_ble_trial.ps1" -Port "COM7" -DeviceLabel "REDMI_PAD_PRO" -Condition "BACKGROUND" -DurationSeconds 300 -TrialId "trial01" -PhoneOs "UNKNOWN" -CoreVersion "UNKNOWN"
 ```
 
-แทน `UNKNOWN` ด้วยค่าจริงที่ทราบ `-ExecutionPolicy RemoteSigned` ใช้เฉพาะ process นี้เพื่อให้รันสคริปต์ที่สร้างในเครื่องได้ ไม่เปลี่ยนนโยบายถาวร สคริปต์บันทึก CSV, ไฟล์ Serial ดิบ และ metadata JSON ใน `experiments/raw_logs/ble_behavior/` ชื่อไฟล์แยกรอบอัตโนมัติ ไม่เขียนทับชุดเดิม รอข้อความ `Completed` หากผิดพลาด/ถูกหยุด metadata จะคง `completed=false` ไว้ ต้องตรวจไฟล์ก่อนนำไปสรุป
+แทน `UNKNOWN` ด้วยค่าจริงที่ทราบ ใช้ `-PhoneOs` ใส่เวอร์ชัน Android/HyperOS ของแท็บเล็ตตามชื่อพารามิเตอร์เดิม `-ExecutionPolicy RemoteSigned` ใช้เฉพาะ process นี้เพื่อให้รันสคริปต์ที่สร้างในเครื่องได้ ไม่เปลี่ยนนโยบายถาวร สคริปต์บันทึก CSV, ไฟล์ Serial ดิบ และ metadata JSON ใน `experiments/raw_logs/ble_behavior/` ชื่อไฟล์แยกรอบอัตโนมัติ ไม่เขียนทับชุดเดิม รอข้อความ `Completed` หากผิดพลาด/ถูกหยุด metadata จะคง `completed=false` ไว้ ต้องตรวจไฟล์ก่อนนำไปสรุป
 
-## นำร่อง 3 สถานะ
+  ## นำร่อง 3 สถานะ
 
-ใช้ Passive Scan ก่อน รอบละ 5 นาที ระยะโทรศัพท์ 1 เมตรเมื่ออยู่ในพื้นที่ วางทิศเดิม ไม่เปิด Quick Share เพิ่มระหว่างรอบ จดอุปกรณ์อื่น ระยะจริง เวลาเปลี่ยนสถานะ และเวลารอใน `-Notes`
+ใช้ Passive Scan ก่อน รอบละ 5 นาที วางแท็บเล็ตห่าง 1 เมตรเมื่ออยู่ในพื้นที่และคงทิศวางเดิม ไม่เปิด Quick Share ระหว่างรอบควบคุม จดอุปกรณ์อื่น ระยะจริง เวลาเปลี่ยนสถานะ และเวลารอใน `-Notes`
 
 | ลำดับ | Condition | ทำอะไร |
 | :--- | :--- | :--- |
-| 1 | `BACKGROUND` | นำ Honor ออกจากพื้นที่รับเท่าที่ทำได้ จดตำแหน่งจริง ไม่ถือว่าสัญญาณทั้งหมดเป็นของโทรศัพท์ |
-| 2 | `BT_OFF` | นำ Honor มาวางที่จุดทดสอบ ปิด Bluetooth ใน Settings จดการตั้งค่าสแกนเบื้องหลัง |
+| 1 | `BACKGROUND` | นำ Redmi Pad Pro ออกจากพื้นที่รับเท่าที่ทำได้และจดตำแหน่งจริง |
+| 2 | `BT_OFF` | นำแท็บเล็ตมาวางที่จุดทดสอบ ปิด Bluetooth ใน Settings จดการตั้งค่าสแกนเบื้องหลัง |
 | 3 | `BT_ON_HOME` | เปิด Bluetooth กลับหน้าโฮม คงสถานะหน้าจอให้เหมือนกันตลอดรอบ |
 
 เปลี่ยน `-Condition` ตามตาราง เมื่อผ่านนำร่องแล้วจึงทำซ้ำอย่างน้อย 3 รอบโดยแยก `-TrialId` และทดลอง Active Scan เป็นชุดแยก `-Mode active` ไม่สรุปว่าเปิด Bluetooth แล้วต้องพบ หรือว่าไม่พบแปลว่าไม่มีสัญญาณ Bluetooth
 
+ก่อนใช้ชุดอัตโนมัติ 5 สถานะ ให้ตรวจว่าแท็บเล็ตมีหน้า Quick Share โหมดรับ รวมถึงตัวเลือกการมองเห็นที่ใช้ได้จริง ถ้าเครื่องใช้ฟีเจอร์แชร์คนละแบบ ให้เก็บรอบ `SHARING_ON` แยกและจดชื่อฟีเจอร์กับการตั้งค่าใน `-Notes` [คู่มือ Quick Share ของ Android](https://support.google.com/android/answer/15728591?hl=en)
+
 ## ความหมายข้อมูล
 
-ทุกแถวมี 20 คอลัมน์ตามหัว CSV; `REPORT` เป็นผลจาก BLE stack ส่วน `EVENT` เป็นสถานะและเหตุการณ์ ตัวเลขเวลาเป็น `millis()` ตั้งแต่บอร์ด boot ไม่ใช่เวลาส่งจริงของมือถือ
+ทุกแถวมี 20 คอลัมน์ตามหัว CSV `REPORT` เป็นผลจาก BLE stack ส่วน `EVENT` เป็นสถานะและเหตุการณ์ ตัวเลขเวลาเป็น `millis()` ที่บอร์ดนับตั้งแต่ boot
 
 - `session_id`, `trial_id`, `device_label`, `condition`, `scan_mode`: ป้ายกำกับการทดลอง ไม่ยืนยันว่าทุกผลรับมาจากเครื่องที่ระบุ
 - `report_id`: ลำดับผลรับของ callback ต่อรอบ ช่องว่างอาจเกิดจากรายงานที่ตัวเก็บล็อกทิ้ง

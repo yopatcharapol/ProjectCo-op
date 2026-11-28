@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "session_id": "S20261127_220903_4e746a09",
+  "trial_id": "bt_on_home01",
+  "device_label": "REDMI_PAD_PRO",
+  "condition": "BT_ON_HOME",
+  "scan_mode": "passive",
+  "requested_duration_seconds": 300,
+  "port": "COM6",
+  "baud_rate": 115200,
+  "board": "Arduino Nano ESP32",
+  "phone_os": "UNKNOWN",
+  "core_version": "2.0.18-arduino.5",
+  "started_utc": "2026-11-27T15:09:03.0765547Z",
+  "ended_utc": "2026-11-27T15:14:03.3082045Z",
+  "completed": true,
+  "observed_reports": 3734,
+  "last_dropped_reports": 0,
+  "notes": "User confirmed ready after instruction to keep Redmi Pad Pro at the same position, enable Bluetooth, return to the Home screen and leave Quick Share unopened. Hardware CDC with DTR off. Android/HyperOS and exact placement details not recorded."
+}

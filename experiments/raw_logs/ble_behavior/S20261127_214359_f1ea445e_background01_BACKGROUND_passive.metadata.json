@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "session_id": "S20261127_214359_f1ea445e",
+  "trial_id": "background01",
+  "device_label": "REDMI_PAD_PRO",
+  "condition": "BACKGROUND",
+  "scan_mode": "passive",
+  "requested_duration_seconds": 300,
+  "port": "COM5",
+  "baud_rate": 115200,
+  "board": "Arduino Nano ESP32",
+  "phone_os": "UNKNOWN",
+  "core_version": "UNKNOWN",
+  "started_utc": "2026-11-27T14:43:59.8408833Z",
+  "ended_utc": "2026-11-27T14:44:19.9280073Z",
+  "completed": false,
+  "observed_reports": 0,
+  "last_dropped_reports": 0,
+  "notes": "Redmi Pad Pro outside test area per user confirmation. OS and firmware build not verified."
+}

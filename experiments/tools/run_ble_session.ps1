@@ -6,18 +6,18 @@
     [ValidateSet('passive', 'active')][string]$Mode = 'passive',
     [string]$PhoneOs = 'UNKNOWN',
     [string]$CoreVersion = '2.0.18-arduino.5',
-    [ValidatePattern('^[A-Za-z0-9_-]{1,40}$')][string]$DeviceLabel = 'HONOR_X7B_5G',
+    [ValidatePattern('^[A-Za-z0-9_-]{1,40}$')][string]$DeviceLabel = 'REDMI_PAD_PRO',
     [string]$OutputRoot = (Join-Path $PSScriptRoot '../raw_logs/ble_sessions'),
     [switch]$PlanOnly
 )
 
 $ErrorActionPreference = 'Stop'
 $phases = @(
-    @{condition = 'BT_OFF'; title = 'ปิด Bluetooth'; instruction = 'ปิด Bluetooth ใน Settings ของมือถือ วางมือถือที่จุดเดิม'},
+    @{condition = 'BT_OFF'; title = 'ปิด Bluetooth'; instruction = 'ปิด Bluetooth ใน Settings แล้ววางเครื่องเป้าหมายที่จุดเดิม'},
     @{condition = 'BT_ON_HOME'; title = 'เปิด Bluetooth หน้าโฮม'; instruction = 'เปิด Bluetooth กลับหน้าโฮม ยังไม่เปิด Quick Share และคงจอเปิดไว้'},
     @{condition = 'SHARING_ON'; title = 'เปิด Quick Share พร้อมรับ'; instruction = 'เปิดหน้า Quick Share แบบรับไฟล์ ให้ทุกคนมองเห็น คงจอเปิดไว้'},
-    @{condition = 'SCREEN_LOCKED'; title = 'ล็อกหน้าจอ'; instruction = 'คง Bluetooth และการตั้งค่า Quick Share เดิม กดล็อกจอโดยไม่ขยับมือถือ'},
-    @{condition = 'SHARING_ON'; title = 'ปลดล็อกกลับหน้า Quick Share'; instruction = 'ปลดล็อก กลับหน้า Quick Share แบบรับไฟล์ ให้ทุกคนมองเห็น โดยไม่ขยับมือถือ'}
+    @{condition = 'SCREEN_LOCKED'; title = 'ล็อกหน้าจอ'; instruction = 'คง Bluetooth และการตั้งค่า Quick Share เดิม กดล็อกจอโดยไม่ขยับเครื่อง'},
+    @{condition = 'SHARING_ON'; title = 'ปลดล็อกกลับหน้า Quick Share'; instruction = 'ปลดล็อก กลับหน้า Quick Share แบบรับไฟล์ ให้ทุกคนมองเห็น โดยไม่ขยับเครื่อง'}
 )
 $plan = @()
 for ($round = 1; $round -le $Repeat; $round++) {
@@ -65,7 +65,7 @@ function Save-Manifest {
 Save-Manifest
 Write-Host 'ปิด Arduino Serial Monitor ก่อน โปรแกรมนี้จะเปิดพอร์ตและบันทึกให้เอง'
 Write-Host ('ชุดนี้มี ' + $plan.Count + ' รอบ รอบละ ' + $DurationSeconds + ' วินาที')
-Write-Host 'คงตำแหน่งมือถือ Wi-Fi และอุปกรณ์รอบตัวไว้เหมือนเดิม โปรแกรมไม่เปลี่ยนสถานะมือถือให้'
+Write-Host 'คงตำแหน่งเครื่องเป้าหมาย Wi-Fi และอุปกรณ์รอบตัวไว้เหมือนเดิม เปลี่ยนสถานะเครื่องตามที่หน้าจอแจ้ง'
 Write-Host ('โฟลเดอร์ผล: ' + $sessionDirectory)
 
 try {
@@ -73,7 +73,7 @@ try {
         Write-Host ''
         Write-Host ($step.trial_id + ': ' + $step.title) -ForegroundColor Cyan
         Write-Host $step.instruction
-        $answer = Read-Host 'ทำบนมือถือเสร็จแล้วกด Enter เพื่อเริ่ม หรือพิมพ์ q เพื่อจบชุด'
+        $answer = Read-Host 'ทำบนเครื่องเป้าหมายเสร็จแล้วกด Enter เพื่อเริ่ม หรือพิมพ์ q เพื่อจบชุด'
         if ($answer.Trim().ToLowerInvariant() -eq 'q') {
             $manifest.status = 'stopped_by_user'
             break
